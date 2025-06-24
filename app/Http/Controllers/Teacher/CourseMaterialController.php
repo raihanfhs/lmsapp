@@ -1,17 +1,15 @@
 <?php
 
 namespace App\Http\Controllers\Teacher;
-
-use App\Http\Controllers\Controller; // Base Controller
-use App\Models\Course;             // To receive the Course model
-use App\Models\CourseMaterial;     // To fetch existing materials (for parent selection)
-use Illuminate\Http\Request;       // Request object
-use Illuminate\Support\Facades\Auth; // To check logged in user
-use Illuminate\View\View;          // For returning views
-use Illuminate\Http\RedirectResponse; // For redirects
-use Illuminate\Support\Facades\Storage; 
+use App\Http\Controllers\Controller;
+use App\Models\Course;
+use App\Models\CourseMaterial;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use App\Models\CourseSection;
 
 class CourseMaterialController extends Controller
 {
@@ -31,33 +29,47 @@ class CourseMaterialController extends Controller
 
     public function store(Request $request, Course $course): RedirectResponse
     {
+        // Authorization Check
+        if (!Auth::user()->teachingCourses()->where('course_id', $course->id)->exists()) {
+                abort(403, 'You are not assigned to teach this course.');
+        }
+
+        // --- CORRECTED VALIDATION ---
+        $maxSize = (int)ini_get('upload_max_filesize') * 1024; // Get max size in Kilobytes
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'file_path' => 'nullable|file|mimes:pdf,jpg,png,zip|max:10240', // 10MB Max
-            'course_section_id' => 'required|exists:course_sections,id',
+            'parent_id' => [
+                'nullable',
+                'integer',
+                \Illuminate\Validation\Rule::exists('course_materials', 'id')->where('course_id', $course->id)
+            ],
+            'video_file' => [
+                'required',
+                'file',
+                'mimes:mp4,mov,avi,wmv,mpeg,qt,webm',
+                // CRITICAL: This is the corrected 'max' rule.
+                'max:' . $maxSize,
+            ],
         ]);
 
-        // Handle the file upload
-        $filePath = null;
-        if ($request->hasFile('file_path')) {
-            $filePath = $request->file('file_path')->store('course_materials', 'public');
-        }
+        // --- SIMPLIFIED FILE HANDLING ---
+        $path = "course_videos/{$course->id}";
+        $filePath = $request->file('video_file')->store($path, 'public');
 
-        // Determine the order for the new material within the section
-        $section = CourseSection::find($validated['course_section_id']);
-        $lastOrder = $section->materials()->max('order');
-
-        // Create the material
+        // Create the CourseMaterial record in the database
         $course->materials()->create([
-            'course_section_id' => $validated['course_section_id'],
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'file_path' => $filePath,
-            'order' => $lastOrder + 1,
+            'parent_id'   => $validated['parent_id'] ?? null,
+            'title'       => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'file_path'   => $filePath,
+            'file_type'   => 'video', // This will now save thanks to the fix in Step 1
         ]);
 
-        return redirect()->route('teacher.courses.show', $course)->with('success', 'Material added successfully.');
+        // Redirect back to the course detail page with a success message
+        return redirect()->route('teacher.courses.show', $course->id)
+                            ->with('success', 'Material "' . $validated['title'] . '" uploaded successfully!');
     }
 
     public function edit(CourseMaterial $material): View

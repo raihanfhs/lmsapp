@@ -18,11 +18,12 @@ class CourseMaterial extends Model
      */
     protected $fillable = [
         'course_id',
-        'course_section_id', // Add this
         'title',
         'description',
         'file_path',
-        'order', // Add this
+        'parent_id',
+        'order',
+        'file_type', // <-- ADD THIS LINE
     ];
     
 
