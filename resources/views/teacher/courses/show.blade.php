@@ -77,6 +77,29 @@
                         </div>
                     </x-card>
 
+                    <x-card>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Quizzes</h3>
+                            <a href="{{ route('teacher.quizzes.create', $course) }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                {{ __('Create New Quiz') }}
+                            </a>
+                        </div>
+                        <div class="space-y-4">
+                            @forelse ($course->quizzes as $quiz)
+                                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                                    <a href="{{ route('teacher.quizzes.questions.index', $quiz) }}" class="text-gray-800 dark:text-gray-200 hover:underline">
+                                        {{ $quiz->title }}
+                                    </a>
+                                    <div class="text-xs text-gray-500">
+                                        {{ $quiz->questions_count }} {{ Str::plural('Question', $quiz->questions_count) }} | {{ $quiz->duration }} min
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-gray-500 dark:text-gray-400">No quizzes have been created for this course yet.</p>
+                            @endforelse
+                        </div>
+                    </x-card>
+
                 </div>
 
                 {{-- Sidebar Column --}}

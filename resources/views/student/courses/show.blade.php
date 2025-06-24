@@ -1,3 +1,5 @@
+{{-- File: resources/views/student/courses/show.blade.php --}}
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
@@ -28,30 +30,52 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Course Materials</h3>
                         <div class="space-y-2">
                             @forelse ($course->materials as $material)
-                                {{-- Di sini kita bisa membuat materi menjadi link atau menampilkan kontennya langsung --}}
                                 <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                                     <h4 class="font-semibold text-gray-800 dark:text-gray-200">{{ $material->title }}</h4>
-                                    {{-- Tampilkan konten Trix Editor dengan aman --}}
                                     <div class="prose dark:prose-invert max-w-none mt-2 text-gray-600 dark:text-gray-400">
-                                        {!! $material->content !!}
+                                        {{-- Asumsi materi disimpan sebagai teks biasa, jika HTML gunakan {!! !!} --}}
+                                        <p>{{ $material->description }}</p>
+                                        @if($material->file_path)
+                                            <a href="{{ Storage::url($material->file_path) }}" target="_blank" class="text-blue-600 hover:underline">Download Material</a>
+                                        @endif
                                     </div>
-                                </div>
-
-                                <div>
-                                    <a href="{{ route('teacher.courses.materials.edit', ['course' => $course->id, 'material' => $material->id]) }}" class="font-medium text-green-600 dark:text-green-400 hover:text-green-500 mr-3">Edit</a>
-                                    
-                                    {{-- FORM UNTUK DELETE --}}
-                                    <form action="{{ route('teacher.courses.materials.destroy', ['course' => $course->id, 'material' => $material->id]) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="font-medium text-red-600 dark:text-red-400 hover:text-red-500" onclick="return confirm('Anda yakin ingin menghapus materi ini?')">Delete</button>
-                                    </form>
                                 </div>
                             @empty
                                 <p class="text-gray-500 dark:text-gray-400">The teacher has not added any materials to this course yet.</p>
                             @endforelse
                         </div>
                     </x-card>
+
+                    {{-- Card untuk Kuis --}}
+                    <div class="mt-6">
+                        <x-card>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                                {{ __('Quizzes') }}
+                            </h3>
+                            <div class="space-y-4">
+                                @forelse ($course->quizzes as $quiz)
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                        <div>
+                                            <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $quiz->title }}</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                {{ $quiz->questions_count ?? $quiz->questions->count() }} Questions | {{ $quiz->duration }} minutes
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <form method="POST" action="{{ route('student.quizzes.start_attempt', $quiz) }}">
+                                                @csrf
+                                                <x-primary-button type="submit">
+                                                    {{ __('Start Quiz') }}
+                                                </x-primary-button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-gray-500 dark:text-gray-400">There are no quizzes available for this course at the moment.</p>
+                                @endforelse
+                            </div>
+                        </x-card>
+                    </div>
 
                 </div>
 
@@ -64,23 +88,23 @@
                             <div class="mb-3">
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Teacher(s)</dt>
                                 <dd class="text-gray-900 dark:text-gray-100">
+                                    {{-- INI ADALAH BARIS YANG DIPERBAIKI --}}
                                     {{ $course->teachers->pluck('name')->join(', ') }}
                                 </dd>
                             </div>
                             <div class="mb-3">
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Code</dt>
-                                <dd class="text-gray-900 dark:text-gray-100">{{ $course->code }}</dd>
+                                <dd class="text-gray-900 dark:text-gray-100">{{ $course->course_code }}</dd>
                             </div>
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Duration</dt>
-                                <dd class="text-gray-900 dark:text-gray-100">{{ $course->duration_in_months ?? 'N/A' }} Months</dd>
+                                <dd class="text-gray-900 dark:text-gray-100">{{ $course->duration_months ?? 'N/A' }} Months</dd>
                             </div>
                         </dl>
                     </x-card>
 
                     <x-card>
                          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">My Progress</h3>
-                         {{-- Di sini kita bisa tambahkan logika untuk menampilkan nilai dan tombol download sertifikat --}}
                          <p class="text-gray-500 dark:text-gray-400">Your final grade and certificate information will appear here.</p>
                     </x-card>
                 </div>

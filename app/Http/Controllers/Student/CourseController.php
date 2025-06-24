@@ -50,7 +50,15 @@ class CourseController extends Controller
             'teachers' // <-- CRUCIAL: This loads the teachers
         ]);
         
-        $course->load(['quizzes', 'onlineMeetings', 'materials']);
+        $course->load([
+                'materials' => function ($query) {
+                    $query->orderBy('order', 'asc');
+                },
+                'quizzes' => function ($query) {
+                    $query->withCount('questions'); // Menghitung pertanyaan dengan efisien
+                },
+                'teachers' // Cukup muat relasi teachers saja
+            ]);
 
         $student = Auth::user();
         
