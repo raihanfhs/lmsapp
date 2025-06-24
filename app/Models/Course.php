@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Course extends Model
 {
     use HasFactory, SoftDeletes;
+    const STATUS_DRAFT = 'draft';
+    const STATUS_PUBLISHED = 'published';
+    const STATUS_ARCHIVED = 'archived';
 
     /**
      * The attributes that are mass assignable.
@@ -31,6 +34,7 @@ class Course extends Model
         'final_exam_date',
         'passing_grade',
         'certificate_template_path',
+        'status',
     ];
 
     /**

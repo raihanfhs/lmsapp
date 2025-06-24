@@ -76,9 +76,11 @@ class CourseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Course $course)
+    public function show(Course $course): View
     {
-        //
+        // Eager load the materials and their children to prevent performance issues
+        $course->load(['materials.children']);
+        return view('pengelola.courses.show', compact('course'));
     }
 
     /**
@@ -196,5 +198,16 @@ class CourseController extends Controller
         // Redirect back to where it makes sense (e.g., course list or course edit)
         return redirect()->route('pengelola.courses.index') // Or maybe admin.courses.edit?
                          ->with('success', 'Teacher assignments updated successfully for ' . $course->title);
+    }
+
+    public function updateStatus(Request $request, Course $course): RedirectResponse
+    {
+        $request->validate([
+            'status' => ['required', Rule::in([Course::STATUS_PUBLISHED, Course::STATUS_ARCHIVED, Course::STATUS_DRAFT])],
+        ]);
+
+        $course->update(['status' => $request->status]);
+
+        return redirect()->route('pengelola.courses.index')->with('success', 'Course status has been updated successfully.');
     }
 }

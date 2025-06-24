@@ -30,62 +30,55 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
+                            <thead>
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Title</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Code</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Assigned Teachers</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created At</th>
-                                    <th scope="col" class="relative px-6 py-3">
-                                        <span class="sr-only">Actions</span>
-                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse ($courses as $course)
+
+                            {{-- Replace the <tbody> with this --}}
+                            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                @foreach ($courses as $course)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $course->id }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $course->title }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $course->course_code ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $course->duration_months ? $course->duration_months . ' Months' : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {{-- Loop through assigned teachers --}}
-                                            @forelse ($course->teachers as $teacher)
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 mr-1">
-                                                    {{ $teacher->name }}
-                                                </span>
-                                            @empty
-                                                <span class="text-xs italic">No teachers assigned</span>
-                                            @endforelse
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{{ $course->title }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $course->course_code }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if($course->status == 'published')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Published</span>
+                                            @elseif($course->status == 'archived')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Archived</span>
+                                            @else
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Draft</span>
+                                            @endif
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $course->created_at->format('Y-m-d') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                            {{-- TODO: Add Assign Teacher Link Later --}}
-                                            {{-- <a href="#" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">Assign Teacher</a> --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            {{-- Conditional Action Buttons --}}
+                                            @if($course->status == 'draft' || $course->status == 'archived')
+                                                <form action="{{ route('pengelola.courses.update_status', $course->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="published">
+                                                    <button type="submit" class="text-green-600 hover:text-green-900 mr-4">Publish</button>
+                                                </form>
+                                            @endif
 
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                                            @if($course->status == 'published')
+                                                <form action="{{ route('pengelola.courses.update_status', $course->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="archived">
+                                                    <button type="submit" class="text-red-600 hover:text-red-900 mr-4">Archive</button>
+                                                </form>
+                                            @endif
                                             
-                                            {{-- Assign Teacher Link --}}
-                                            <a href="{{ route('pengelola.courses.assign_teachers.form', $course->id) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">Assign Teachers</a>
-                                            
-                                            {{-- Edit Link --}}
-                                            <a href="{{ route('pengelola.courses.edit', $course->id) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</a>
-
-                                            {{-- Delete Form --}}
-                                            <form action="{{ route('pengelola.courses.destroy', $course->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete course \'{{ $course->title }}\'? This cannot be undone.');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
-                                            </form>
+                                            <a href="{{ route('pengelola.courses.show', $course->id) }}" class="text-blue-600 hover:text-blue-900 mr-4">Manage Content</a>
+                                            <a href="{{ route('pengelola.courses.edit', $course->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">No courses found. Create one!</td>
-                                    </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

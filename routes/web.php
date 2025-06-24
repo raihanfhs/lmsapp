@@ -73,6 +73,8 @@ Route::middleware(['auth', 'verified', 'role:Admin'])->prefix('admin')->name('ad
 // Protected by 'auth', 'verified', and the 'role:Pengelola' middleware.
 Route::middleware(['auth', 'verified', 'role:Pengelola'])->prefix('pengelola')->name('pengelola.')->group(function () {
     Route::get('/dashboard', [PengelolaDashboardController::class, 'index'])->name('dashboard');
+    Route::get('courses/{course}', [PengelolaCourseController::class, 'show'])->name('courses.show');
+    Route::resource('courses', PengelolaCourseController::class)->except(['show']);
 
     // Course Management for Pengelola
     Route::resource('courses', PengelolaCourseController::class);
@@ -84,6 +86,17 @@ Route::middleware(['auth', 'verified', 'role:Pengelola'])->prefix('pengelola')->
          ->name('courses.assign_teachers.sync');
     
     Route::resource('learning-paths', LearningPathController::class);
+        Route::prefix('/courses/{course}/materials')
+        ->name('courses.materials.')
+        ->controller(\App\Http\Controllers\Pengelola\CourseMaterialController::class)
+        ->group(function () {
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{material}/edit', 'edit')->name('edit');
+            Route::put('/{material}', 'update')->name('update');
+            Route::delete('/{material}', 'destroy')->name('destroy');
+        });
+    Route::patch('courses/{course}/status', [PengelolaCourseController::class, 'updateStatus'])->name('courses.update_status');
 });
 
 // --- Teacher Routes ---
@@ -92,17 +105,6 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
     Route::resource('courses/{course}/quizzes', TeacherQuizController::class);
     Route::resource('courses', TeacherCourseController::class);
-    Route::prefix('/courses/{course}/materials')
-    ->name('courses.materials.') // Is this exactly 'courses.materials.'?
-    ->controller(CourseMaterialController::class) // Is CourseMaterialController alias correct?
-    ->group(function () {
-        // Is this exactly name('create')?
-        Route::get('/create', 'create')->name('create');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{material}/edit', 'edit')->name('edit');
-        Route::put('/{material}', 'update')->name('update');
-        Route::delete('/{material}', 'destroy')->name('destroy');
-    });
     // --- Routes for Managing Online Meetings within a Course ---
     Route::prefix('/courses/{course}/meetings') // URL Prefix: /teacher/courses/{course_id}/meetings/...
     ->name('courses.meetings.')           // Route Name Prefix: teacher.courses.meetings...

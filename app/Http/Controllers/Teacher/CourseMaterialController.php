@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Teacher;
+
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\CourseMaterial;
@@ -14,69 +15,82 @@ use Illuminate\Validation\Rule;
 class CourseMaterialController extends Controller
 {
     /**
-     * @param Course $course Automatically injected by route-model binding
-     * @return View|RedirectResponse
+     * Show the form for creating a new resource.
      */
-    public function create(Request $request, Course $course): View|RedirectResponse
+    public function create(Course $course): View
     {
-        // Authorization Check: Ensure the logged-in teacher is assigned to this course
+        // Authorization Check
         if (!Auth::user()->teachingCourses()->where('course_id', $course->id)->exists()) {
-                abort(403, 'You are not assigned to teach this course.');
+             abort(403, 'You are not assigned to teach this course.');
         }
-        $section_id = $request->query('section_id');
-        return view('teacher.materials.create', compact('course', 'section_id'));
+        return view('teacher.materials.create', compact('course'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request, Course $course): RedirectResponse
     {
         // Authorization Check
         if (!Auth::user()->teachingCourses()->where('course_id', $course->id)->exists()) {
-                abort(403, 'You are not assigned to teach this course.');
+            abort(403, 'You are not assigned to teach this course.');
         }
-
-        // --- CORRECTED VALIDATION ---
-        $maxSize = (int)ini_get('upload_max_filesize') * 1024; // Get max size in Kilobytes
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'parent_id' => [
-                'nullable',
-                'integer',
-                \Illuminate\Validation\Rule::exists('course_materials', 'id')->where('course_id', $course->id)
-            ],
-            'video_file' => [
-                'required',
-                'file',
-                'mimes:mp4,mov,avi,wmv,mpeg,qt,webm',
-                // CRITICAL: This is the corrected 'max' rule.
-                'max:' . $maxSize,
-            ],
+            'type' => 'required|in:video_url,document_file,image_file',
         ]);
 
-        // --- SIMPLIFIED FILE HANDLING ---
-        $path = "course_videos/{$course->id}";
-        $filePath = $request->file('video_file')->store($path, 'public');
+        $content = '';
+        $type = $request->input('type');
 
-        // Create the CourseMaterial record in the database
+        // --- Logic for URL types ---
+        if ($type === 'video_url') {
+            $validatedUrl = $request->validate([
+                'content_url' => 'required|url',
+            ]);
+            $content = $validatedUrl['content_url'];
+        }
+
+        // --- Logic for File Upload types ---
+        if (in_array($type, ['document_file', 'image_file'])) {
+            $rules = ['content_file' => 'required|file'];
+            if ($type === 'document_file') {
+                $rules['content_file'] .= '|mimes:pdf,doc,docx,ppt,pptx|max:10240'; // 10MB max
+            }
+            if ($type === 'image_file') {
+                $rules['content_file'] .= '|image|mimes:jpeg,png,jpg,gif,svg|max:2048'; // 2MB max
+            }
+            
+            $request->validate($rules);
+            
+            $path = "course_materials/{$course->id}";
+            $content = $request->file('content_file')->store($path, 'public');
+        }
+
+        // Determine the order
+        $lastOrder = $course->materials()->max('order');
+
+        // Create the material with the new structure
         $course->materials()->create([
-            'parent_id'   => $validated['parent_id'] ?? null,
             'title'       => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'file_path'   => $filePath,
-            'file_type'   => 'video', // This will now save thanks to the fix in Step 1
+            'description' => $validated['description'],
+            'type'        => $type,
+            'content'     => $content,
+            'order'       => $lastOrder + 1,
         ]);
 
-        // Redirect back to the course detail page with a success message
         return redirect()->route('teacher.courses.show', $course->id)
-                            ->with('success', 'Material "' . $validated['title'] . '" uploaded successfully!');
+                         ->with('success', 'Material added successfully!');
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(CourseMaterial $material): View
     {
-        // Optional: Add authorization here if needed
-        // Gate::authorize('update', $material);
-
+        // This is a placeholder. We will build this out later.
         return view('teacher.materials.edit', compact('material'));
     }
 
@@ -85,24 +99,11 @@ class CourseMaterialController extends Controller
      */
     public function update(Request $request, CourseMaterial $material): RedirectResponse
     {
-        // Optional: Add authorization here if needed
-        // Gate::authorize('update', $material);
-
+        // This method will need to be updated later to support the new multi-type system.
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'file_path' => 'nullable|file|mimes:pdf,jpg,png,zip|max:10240', // 10MB Max
         ]);
-
-        // Handle file update
-        if ($request->hasFile('file_path')) {
-            // Delete the old file if it exists
-            if ($material->file_path) {
-                Storage::disk('public')->delete($material->file_path);
-            }
-            // Store the new file
-            $validated['file_path'] = $request->file('file_path')->store('course_materials', 'public');
-        }
 
         $material->update($validated);
 
@@ -114,19 +115,15 @@ class CourseMaterialController extends Controller
      */
     public function destroy(CourseMaterial $material): RedirectResponse
     {
-        // Optional: Add authorization here if needed
-        // Gate::authorize('delete', $material);
-
-        // Get the course ID before deleting the material to redirect back to the correct page
         $courseId = $material->course_id;
         
-        // Delete the associated file from storage if it exists
-        if ($material->file_path) {
-            Storage::disk('public')->delete($material->file_path);
+        // If the material is a file, delete it from storage
+        if (in_array($material->type, ['document_file', 'image_file'])) {
+            Storage::disk('public')->delete($material->content);
         }
         
         $material->delete();
 
         return redirect()->route('teacher.courses.show', $courseId)->with('success', 'Material deleted successfully.');
-    }    
+    }
 }

@@ -25,51 +25,25 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     @if($courses->isNotEmpty())
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            @foreach ($courses as $course)
-                                <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $course->title }}</h3>
-                                    @if($course->course_code)
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{{ $course->course_code }}</p>
-                                    @endif
-                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                        {{ Str::limit($course->description, 100) }} {{-- Show a limited description --}}
+                            @forelse ($courses as $course)
+                                <x-card>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ $course->title }}</h3>
+                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        {{ Str::limit($course->description, 100) }}
                                     </p>
-                                    @if($course->duration_months)
-                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            Duration: {{ $course->duration_months }} Months
-                                        </p>
-                                    @endif
-                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                        Teacher(s):
-                                        @forelse($course->teachers as $teacher)
-                                            {{ $teacher->name }}{{ !$loop->last ? ', ' : '' }}
-                                        @empty
-                                            N/A
-                                        @endforelse
-                                    </p>
-
                                     <div class="mt-4">
-                                        {{-- Check if student is already enrolled --}}
-                                        @php
-                                            $isEnrolled = Auth::user()->enrolledCourses->contains($course->id);
-                                        @endphp
-
-                                        @if ($isEnrolled)
-                                            <span class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest cursor-not-allowed">
-                                                Already Enrolled
-                                            </span>
-                                            <a href="{{ route('student.courses.show', $course->id) }}" class="ml-2 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">View Course</a>
-                                        @else
-                                            <form method="POST" action="{{ route('student.enrollments.store', $course->id) }}" class="inline">
-                                                @csrf
-                                                <x-primary-button>
-                                                    {{ __('Enroll Now') }}
-                                                </x-primary-button>
-                                            </form>
-                                        @endif
+                                        <form action="{{ route('student.enrollments.store', $course) }}" method="POST">
+                                            @csrf
+                                            <x-primary-button>Enroll Now</x-primary-button>
+                                        </form>
                                     </div>
+                                </x-card>
+                            @empty
+                                {{-- This message will show if the $courses collection is empty --}}
+                                <div class="md:col-span-3 text-center py-12">
+                                    <p class="text-gray-500 dark:text-gray-400">There are currently no courses available for enrollment. Please check back later!</p>
                                 </div>
-                            @endforeach
+                            @endforelse
                         </div>
 
                         <div class="mt-8">
