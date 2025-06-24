@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Course; // Import Course model for relationship
+use Illuminate\Database\Eloquent\Relations\BelongsTo; 
 
 class CourseMaterial extends Model
 {
@@ -17,13 +18,13 @@ class CourseMaterial extends Model
      */
     protected $fillable = [
         'course_id',
-        'parent_id',
+        'course_section_id', // Add this
         'title',
         'description',
         'file_path',
-        'file_type',
-        'order',
+        'order', // Add this
     ];
+    
 
     /**
      * Get the course that this material belongs to.
@@ -50,4 +51,10 @@ class CourseMaterial extends Model
         // Order children by the 'order' column
         return $this->hasMany(CourseMaterial::class, 'parent_id')->orderBy('order', 'asc');
     }
+
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(CourseSection::class, 'course_section_id');
+    }
+
 }

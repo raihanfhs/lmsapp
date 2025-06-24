@@ -2,27 +2,29 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+// TAMBAHKAN DUA BARIS INI
 use App\Models\CourseMaterial;
 use App\Policies\CourseMaterialPolicy;
 
-
-class AppServiceProvider extends ServiceProvider
+class AuthServiceProvider extends ServiceProvider
 {
+    /**
+     * The model to policy mappings for the application.
+     *
+     * @var array<class-string, class-string>
+     */
     protected $policies = [
-        CourseMaterial::class => CourseMaterialPolicy::class, 
+        // TAMBAHKAN REGISTRASI POLICY ANDA DI SINI
+        CourseMaterial::class => CourseMaterialPolicy::class,
     ];
 
-    public function register(): void
-    {
-        //
-    }
-
     /**
-     * Bootstrap any application services.
+     * Register any authentication / authorization services.
      */
     public function boot(): void
     {
-        //
+        // Panggil registerPolicies() jika belum ada
+        $this->registerPolicies();
     }
 }

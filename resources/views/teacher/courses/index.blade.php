@@ -13,9 +13,6 @@
                 {{-- Judul dan Tombol Tambah Course --}}
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-medium">{{ __("Your Assigned Courses") }}</h3>
-                    <a href="{{-- route('teacher.courses.create') --}}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150">
-                        {{ __('Create New Course') }}
-                    </a>
                 </div>
 
                 {{-- Daftar Course --}}
@@ -37,16 +34,6 @@
                             <div class="flex-shrink-0 ml-4">
                                 {{-- INI PERBAIKANNYA --}}
                                 <a href="{{ route('teacher.courses.materials.create', ['course' => $course->id]) }}" class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 mr-4">Add Material</a>
-                                
-                                {{-- INI PERBAIKANNYA --}}
-                                <a href="{{ route('teacher.courses.edit', $course->id) }}" class="font-medium text-green-600 dark:text-green-400 hover:text-green-500 mr-4">Edit</a>
-                                
-                                {{-- INI PERBAIKANNYA --}}
-                                <form action="{{ route('teacher.courses.destroy', $course->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="font-medium text-red-600 dark:text-red-400 hover:text-red-500" onclick="return confirm('Are you sure?')">Delete</button>
-                                </form>
                             </div>
                         </div>
                     @empty

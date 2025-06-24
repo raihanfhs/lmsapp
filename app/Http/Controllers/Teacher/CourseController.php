@@ -91,35 +91,6 @@ class CourseController extends Controller // <-- CHANGE THIS LINE
         return view('teacher.courses.index', compact('courses'));
     }
 
-    /**
-     * Show the form for creating a new course.
-     */
-    public function create(): View
-    {
-        // View file: resources/views/teacher/courses/create.blade.php
-        return view('teacher.courses.create');
-    }
-
-    /**
-     * Store a newly created course in storage.
-     */
-    public function store(Request $request): RedirectResponse // Replace Request with StoreCourseRequest later
-    {
-        // TODO: Replace with Form Request Validation later
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'course_code' => 'nullable|string|max:50|unique:courses,course_code',
-        ]);
-
-        // Add the current teacher's user_id to the validated data
-        $validated['user_id'] = Auth::id();
-
-        // Create the course
-        Course::create($validated);
-
-        return redirect()->route('teacher.courses.index')->with('success', 'Course created successfully.');
-    }
 
     public function show(Course $course): View|RedirectResponse
     {
@@ -128,16 +99,7 @@ class CourseController extends Controller // <-- CHANGE THIS LINE
         }
 
         // Eager load relationships for the course
-        $course->load([
-            'materials' => function ($query) {
-                $query->orderBy('parent_id', 'asc')->orderBy('order', 'asc');
-            },
-            'onlineMeetings' => function ($query) {
-                $query->orderBy('meeting_datetime', 'asc');
-            },
-            'teachers',
-            'enrolledStudents' // Load the enrolled students
-        ]);
+        $course->load(['students', 'sections.materials']);
 
         // Now, for each enrolled student, eager load their grades and certificates for THIS course
         // This approach is more explicit and often more reliable for nested conditions.
@@ -154,54 +116,5 @@ class CourseController extends Controller // <-- CHANGE THIS LINE
 
         return view('teacher.courses.show', compact('course'));
     }
-    /**
-     * Show the form for editing the specified course.
-     */
-    public function edit(Course $course): View
-    {
-        // Ensure the teacher owns this course
-        if (Auth::id() !== $course->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-        // View file: resources/views/teacher/courses/edit.blade.php
-        return view('teacher.courses.edit', compact('course'));
-    }
-
-    /**
-     * Update the specified course in storage.
-     */
-    public function update(Request $request, Course $course): RedirectResponse // Replace Request with UpdateCourseRequest later
-    {
-         // Ensure the teacher owns this course
-        if (Auth::id() !== $course->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // TODO: Replace with Form Request Validation later
-         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            // Ensure course_code is unique, ignoring the current course's code
-            'course_code' => 'nullable|string|max:50|unique:courses,course_code,' . $course->id,
-        ]);
-
-        $course->update($validated);
-
-        return redirect()->route('teacher.courses.index')->with('success', 'Course updated successfully.');
-    }
-
-    /**
-     * Remove the specified course from storage.
-     */
-    public function destroy(Course $course): RedirectResponse
-    {
-        // Ensure the teacher owns this course
-         if (Auth::id() !== $course->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $course->delete();
-
-        return redirect()->route('teacher.courses.index')->with('success', 'Course deleted successfully.');
-    }
+    
 }

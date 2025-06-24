@@ -134,6 +134,12 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
     Route::put('/quizzes/{quiz}/questions/{question}', [TeacherQuestionController::class, 'update'])->name('quizzes.questions.update');
     Route::post('/questions/{question}/options', [TeacherOptionController::class, 'store'])->name('questions.options.store');
     Route::delete('/options/{option}', [TeacherOptionController::class, 'destroy'])->name('options.destroy');
+
+    Route::resource('courses.sections', \App\Http\Controllers\Teacher\CourseSectionController::class)
+    ->shallow()
+    ->only(['store', 'destroy']);
+    Route::resource('courses.materials', \App\Http\Controllers\Teacher\CourseMaterialController::class)->shallow();
+
 });
 
 

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// Import necessary models for relationships
 use App\Models\User;
 use App\Models\CourseMaterial;
 use App\Models\OnlineMeeting;
@@ -12,11 +11,12 @@ use App\Models\StudentGrade;
 use App\Models\Certificate;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class Course extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -147,6 +147,17 @@ class Course extends Model
     public function quizzes(): HasMany
     {
         return $this->hasMany(Quiz::class);
+    }
+
+    public function sections(): HasMany
+    {
+        return $this->hasMany(CourseSection::class)->orderBy('order');
+    }
+    
+    public function students(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'enrollments')
+                    ->withTimestamps(); // Optional: if you want to access created_at/updated_at on the enrollment record
     }
 
 }
