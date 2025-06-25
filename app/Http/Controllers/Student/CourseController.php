@@ -75,18 +75,18 @@ class CourseController extends Controller
      */
     public function browseCourses(): View
     {
-        // The currently logged-in student
-        $student = Auth::user();
-        
-        // Get IDs of courses the student is already enrolled in
-        $enrolledCourseIds = $student->enrolledCourses()->pluck('course_id');
+        // Ambil ID pengguna (siswa) yang sedang login
+        $userId = auth()->id();
 
-        // --- THIS IS THE CHANGE ---
-        // Fetch only PUBLISHED courses that the student is NOT already enrolled in
-        $courses = Course::where('status', Course::STATUS_PUBLISHED) // <-- ADD THIS LINE
-                        ->whereNotIn('id', $enrolledCourseIds)
-                        ->orderBy('title')
-                        ->get();
+        // Mengambil course yang 'published' dan KECUALI yang sudah di-enroll oleh siswa
+        $courses = Course::where('status', 'published') // Filter hanya yang published
+            ->whereDoesntHave('enrolledStudents', function ($query) use ($userId) {
+                // Cek di tabel pivot 'enrollments' apakah ada entri dengan user_id ini
+                $query->where('user_id', $userId);
+            })
+            ->with('teachers')
+            ->latest()
+            ->paginate(12);
 
         return view('student.courses.browse', compact('courses'));
     }

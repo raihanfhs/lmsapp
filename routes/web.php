@@ -84,6 +84,7 @@ Route::middleware(['auth', 'verified', 'role:Pengelola'])->prefix('pengelola')->
          ->name('courses.assign_teachers.sync');
     
     Route::resource('learning-paths', LearningPathController::class);
+    Route::patch('/courses/{course}/update-status', [PengelolaCourseController::class, 'updateStatus'])->name('courses.update_status');
 });
 
 // --- Teacher Routes ---

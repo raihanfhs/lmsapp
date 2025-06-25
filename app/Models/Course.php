@@ -59,8 +59,7 @@ class Course extends Model
      */
     public function teachers()
     {
-        // Links to User model via the 'course_teacher' pivot table
-        return $this->belongsToMany(User::class, 'course_teacher');
+        return $this->belongsToMany(User::class, 'course_teacher', 'course_id', 'user_id');
     }
 
     /**
@@ -164,4 +163,5 @@ class Course extends Model
                     ->withTimestamps(); // Optional: if you want to access created_at/updated_at on the enrollment record
     }
 
+    
 }
