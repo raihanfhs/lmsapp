@@ -56,9 +56,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(TeacherDetail::class);
     }
 
-    public function teachingCourses()
+    public function teachingCourses(): BelongsToMany
     {
-        return $this->belongsToMany(Course::class, 'course_teacher');
+        return $this->belongsToMany(Course::class, 'course_teacher', 'user_id', 'course_id');
     }
 
     public function enrolledCourses(): BelongsToMany
@@ -68,13 +68,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function studentGrades(): HasMany
     {
+        // Secara eksplisit beritahu Laravel bahwa foreign key-nya adalah 'student_id'
         return $this->hasMany(StudentGrade::class, 'student_id');
     }
 
     public function certificates(): HasMany
     {
-        return $this->hasMany(Certificate::class, 'student_id');
+        // Secara eksplisit beritahu Laravel bahwa foreign key-nya adalah 'user_id'
+        return $this->hasMany(Certificate::class, 'user_id');
     }
+
+    
     
     public function division()
     {

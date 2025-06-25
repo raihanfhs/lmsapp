@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\CourseMaterial;
-use App\Models\OnlineMeeting;
+use App\Models\Meeting;
 use App\Models\StudentGrade;
 use App\Models\Certificate;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -57,7 +57,7 @@ class Course extends Model
      * Get the teachers assigned to teach this course.
      * Defines a many-to-many relationship.
      */
-    public function teachers()
+    public function teachers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'course_teacher', 'course_id', 'user_id');
     }
@@ -88,9 +88,9 @@ class Course extends Model
      * Get the online meetings scheduled for this course.
      * Defines a one-to-many relationship.
      */
-    public function onlineMeetings()
+    public function meetings(): HasMany
     {
-        return $this->hasMany(OnlineMeeting::class)->orderBy('meeting_datetime', 'asc');
+        return $this->hasMany(Meeting::class)->orderBy('meeting_datetime', 'asc');
     }
 
     /**

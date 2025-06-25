@@ -14,7 +14,7 @@ use App\Http\Controllers\Pengelola\CourseController as PengelolaCourseController
 use App\Http\Controllers\Admin\DivisionController as AdminDivisionController; // <-- ADD THIS
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Teacher\CourseMaterialController; 
-use App\Http\Controllers\Teacher\OnlineMeetingController;
+use App\Http\Controllers\Teacher\MeetingController;
 use App\Http\Controllers\Admin\SkillController as AdminSkillController; // <-- ADD THIS
 use App\Http\Controllers\Pengelola\LearningPathController;
 use App\Http\Controllers\Student\LearningPathController as StudentLearningPathController;
@@ -107,7 +107,7 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
     // --- Routes for Managing Online Meetings within a Course ---
     Route::prefix('/courses/{course}/meetings') // URL Prefix: /teacher/courses/{course_id}/meetings/...
     ->name('courses.meetings.')           // Route Name Prefix: teacher.courses.meetings...
-    ->controller(OnlineMeetingController::class) // Assign Controller
+    ->controller(MeetingController::class) // Assign Controller
     ->group(function () {
         Route::get('/create', 'create')->name('create');    // teacher.courses.meetings.create
         Route::post('/', 'store')->name('store');          // teacher.courses.meetings.store

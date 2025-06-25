@@ -100,6 +100,50 @@
                         </div>
                     </x-card>
 
+                    {{-- ========================================================== --}}
+                    {{-- KODE BARU UNTUK MEETING DITEMPATKAN DI SINI --}}
+                    {{-- ========================================================== --}}
+                    <x-card>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Scheduled Meetings</h3>
+                            <a href="{{ route('teacher.courses.meetings.create', ['course' => $course->id]) }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline">Schedule New Meeting</a>
+                        </div>
+                        <div class="space-y-4">
+                             {{-- Ingat: kita sudah mengubah relasi dari onlineMeetings menjadi meetings --}}
+                            @forelse ($course->meetings as $meeting)
+                                <div class="flex justify-between items-start p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                                    <div>
+                                        <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $meeting->title }}</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            {{ \Carbon\Carbon::parse($meeting->meeting_datetime)->format('D, d M Y - H:i') }}
+                                        </p>
+                                        {{-- Logika Kondisional untuk menampilkan Link atau Lokasi --}}
+                                        @if ($meeting->type === 'online')
+                                            <a href="{{ $meeting->meeting_link }}" target="_blank" class="text-sm text-blue-600 hover:underline">
+                                                Join Meeting
+                                            </a>
+                                        @else
+                                            <p class="text-sm text-gray-500 dark:text-gray-300">
+                                                Location: {{ $meeting->location }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                    {{-- Tombol Edit dan Delete --}}
+                                    <div class="flex space-x-2">
+                                        <a href="{{ route('teacher.courses.meetings.edit', ['course' => $course, 'meeting' => $meeting]) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200 text-sm">Edit</a>
+                                        <form action="{{ route('teacher.courses.meetings.destroy', ['course' => $course, 'meeting' => $meeting]) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 text-sm">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-gray-500 dark:text-gray-400">No meetings have been scheduled for this course yet.</p>
+                            @endforelse
+                        </div>
+                    </x-card>
+
                 </div>
 
                 {{-- Sidebar Column --}}
