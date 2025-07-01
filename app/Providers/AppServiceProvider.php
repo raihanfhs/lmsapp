@@ -6,6 +6,9 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 // TAMBAHKAN DUA BARIS INI
 use App\Models\CourseMaterial;
 use App\Policies\CourseMaterialPolicy;
+use App\Models\Course; // <-- ADD THIS LINE
+use App\Policies\CoursePolicy; // <-- ADD THIS LINE
+
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -17,6 +20,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         // TAMBAHKAN REGISTRASI POLICY ANDA DI SINI
         CourseMaterial::class => CourseMaterialPolicy::class,
+        Course::class => CoursePolicy::class, // <-- ADD THIS LINE
     ];
 
     /**

@@ -5,13 +5,9 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Models\Meeting; // <-- GANTI DARI OnlineMeeting
+use App\Models\Meeting;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Pastikan ini ada
 
 class MeetingController extends Controller
 {

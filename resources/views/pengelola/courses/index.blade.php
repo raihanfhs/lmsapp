@@ -73,7 +73,7 @@
                                                     <button type="submit" class="text-red-600 hover:text-red-900 mr-4">Archive</button>
                                                 </form>
                                             @endif
-                                            
+                                            <a href="{{ route('pengelola.courses.progress', ['course' => $course->id]) }}" class="text-green-600 hover:text-green-900 mr-4">Progress</a>
                                             <a href="{{ route('pengelola.courses.show', $course->id) }}" class="text-blue-600 hover:text-blue-900 mr-4">Manage Content</a>
                                             <a href="{{ route('pengelola.courses.edit', $course->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                         </td>

@@ -210,4 +210,37 @@ class CourseController extends Controller
 
         return redirect()->route('pengelola.courses.index')->with('success', 'Course status has been updated successfully.');
     }
+
+    /**
+     * Display the progress of all students in a specific course.
+     */
+    public function progress(Course $course)
+    {
+        // Eager load the necessary data to avoid multiple database queries.
+        // We get the course's enrollments, and for each enrollment, the student.
+        // We also get all grades that have been given for this course.
+        $course->load('enrollments.student', 'grades');
+
+        // We will map over the enrollments to create a clean data structure for our view.
+        $studentsProgress = $course->enrollments->map(function ($enrollment) {
+            
+            // For each enrolled student, find their corresponding grade from the loaded 'grades' collection.
+            $studentGrade = $enrollment->course->grades->firstWhere('student_id', $enrollment->student_id);
+
+            return (object)[
+                'name' => $enrollment->student->name,
+                'email' => $enrollment->student->email,
+                'enrolled_at' => $enrollment->created_at->format('d M Y'),
+                'grade' => $studentGrade ? $studentGrade->grade : 'Not Graded',
+                'status' => $studentGrade ? ($studentGrade->is_passed ? 'Passed' : 'Failed') : 'In Progress',
+            ];
+        });
+
+        // Return the view and pass the course and progress data to it.
+        return view('pengelola.courses.progress', [
+            'course' => $course,
+            'studentsProgress' => $studentsProgress,
+        ]);
+    }
+    
 }

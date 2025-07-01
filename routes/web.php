@@ -76,6 +76,7 @@ Route::middleware(['auth', 'verified', 'role:Pengelola'])->prefix('pengelola')->
 
     // Course Management for Pengelola
     Route::resource('courses', PengelolaCourseController::class);
+    Route::get('/courses/{course}/progress', [PengelolaCourseController::class, 'progress'])->name('courses.progress');
 
     // Routes for Assigning Teachers to a Course (managed by Pengelola)
     Route::get('/courses/{course}/assign-teachers', [PengelolaCourseController::class, 'assignTeachersForm'])
