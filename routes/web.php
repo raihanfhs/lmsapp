@@ -65,7 +65,6 @@ Route::middleware(['auth', 'role:chief'])->name('chief.')->prefix('chief')->grou
     Route::get('/dashboard', [\App\Http\Controllers\Chief\DashboardController::class, 'index'])->name('dashboard');
 });
 
-
 // --- Admin Routes ---
 // Protected by 'auth', 'verified', and the 'role:Admin' middleware.
 // URLs will start with /admin/ (e.g., /admin/dashboard)
