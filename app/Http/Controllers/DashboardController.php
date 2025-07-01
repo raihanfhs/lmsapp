@@ -19,6 +19,9 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        if ($user->email === 'chief@lms.test') {
+        return redirect()->route('chief.dashboard');
+        }
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
         } elseif ($user->hasRole('teacher')) {
@@ -27,7 +30,7 @@ class DashboardController extends Controller
             return redirect()->route('student.dashboard');
         } elseif ($user->hasRole('pengelola')) {
             return redirect()->route('pengelola.dashboard');
-        } elseif ($user->hasRole('chief')) { // 👇 ADD THIS NEW CONDITION
+        } elseif ($user->hasRole('Chief')) { 
             return redirect()->route('chief.dashboard');
         }
         return view('dashboard');

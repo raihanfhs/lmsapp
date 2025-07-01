@@ -44,6 +44,7 @@ class DashboardController extends Controller
             'data' => $enrollmentData,
         ];
 
+
         // Pass all chart data to the view
         return view('chief.dashboard', compact('coursesByDivisionData', 'enrollmentsOverTimeData'));
     }

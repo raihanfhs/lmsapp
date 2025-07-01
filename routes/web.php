@@ -24,6 +24,7 @@ use App\Http\Controllers\Teacher\OptionController as TeacherOptionController;
 use App\Http\Controllers\Student\QuizAttemptController;
 use App\Http\Controllers\TrixController;
 
+
 // Public Route (Homepage / Welcome)
 Route::get('/', function () {
     // If user is logged in, redirect them to their dashboard, otherwise show welcome/login
