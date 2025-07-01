@@ -60,7 +60,7 @@ class CourseController extends Controller
                 'teachers' // Cukup muat relasi teachers saja
             ]);
 
-        $student = Auth::user();
+        $student = Auth::user()->load('quizAttempts');
         
         $student->load(['studentGrades' => fn($q) => $q->where('course_id', $course->id),
                         'certificates' => fn($q) => $q->where('course_id', $course->id)]);
@@ -102,7 +102,7 @@ class CourseController extends Controller
             if ($course->status !== Course::STATUS_PUBLISHED) {
             return redirect()->route('student.courses.browse')->with('error', 'This course is not available for enrollment.');
         }
-        $student = Auth::user();
+        $student = Auth::user()->load('quizAttempts');
 
         // --- Prerequisite Check ---
         $prerequisites = $course->prerequisites; // Get the collection of prerequisite courses

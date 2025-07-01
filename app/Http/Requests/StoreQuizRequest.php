@@ -23,16 +23,12 @@ class StoreQuizRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => [
-                'required',
-                'string',
-                'max:255',
-                // Judul kuis harus unik untuk setiap kursus
-                Rule::unique('quizzes')->where('course_id', $this->course->id),
-            ],
-            'description'   => 'nullable|string',
-            'duration'      => 'required|integer|min:1',
-            'passing_grade' => 'required|integer|min:0|max:100',
+        'title'         => 'required|string|max:255',
+        'description'   => 'nullable|string',
+        'duration'      => 'required|integer|min:1',
+        'pass_grade'    => 'required|integer|min:0|max:100',
+        // This assumes you added 'max_attempts' to the fillable array in the Quiz model
+        'max_attempts'  => 'nullable|integer|min:1', 
         ];
     }
 }

@@ -143,6 +143,8 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
     ->shallow()
     ->only(['store', 'destroy']);
 
+    Route::resource('courses/{course}/assignments', \App\Http\Controllers\Teacher\AssignmentController::class);
+
 });
 
 

@@ -169,5 +169,8 @@ class Course extends Model
                     ->withTimestamps(); // Optional: if you want to access created_at/updated_at on the enrollment record
     }
 
-    
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
+    }
 }

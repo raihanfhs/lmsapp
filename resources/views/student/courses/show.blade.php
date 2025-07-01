@@ -1,5 +1,3 @@
-{{-- File: resources/views/student/courses/show.blade.php --}}
-
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
@@ -54,20 +52,39 @@
                             </h3>
                             <div class="space-y-4">
                                 @forelse ($course->quizzes as $quiz)
+                                    @php
+                                        // Count how many times the student has attempted THIS specific quiz
+                                        $attemptsCount = $student->quizAttempts->where('quiz_id', $quiz->id)->count();
+                                        // Check if the student is allowed to take the quiz again
+                                        $canTakeQuiz = is_null($quiz->max_attempts) || $attemptsCount < $quiz->max_attempts;
+                                    @endphp
+
                                     <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                         <div>
                                             <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $quiz->title }}</p>
                                             <p class="text-sm text-gray-500 dark:text-gray-400">
                                                 {{ $quiz->questions_count ?? $quiz->questions->count() }} Questions | {{ $quiz->duration }} minutes
                                             </p>
+                                            {{-- Display attempt counter if a limit is set --}}
+                                            @if ($quiz->max_attempts)
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    (Attempts: {{ $attemptsCount }} / {{ $quiz->max_attempts }})
+                                                </p>
+                                            @endif
                                         </div>
                                         <div>
-                                            <form method="POST" action="{{ route('student.quizzes.start_attempt', $quiz) }}">
-                                                @csrf
-                                                <x-primary-button type="submit">
-                                                    {{ __('Start Quiz') }}
+                                            @if ($canTakeQuiz)
+                                                <form method="POST" action="{{ route('student.quizzes.start_attempt', $quiz) }}">
+                                                    @csrf
+                                                    <x-primary-button type="submit">
+                                                        {{ __('Start Quiz') }}
+                                                    </x-primary-button>
+                                                </form>
+                                            @else
+                                                <x-primary-button disabled class="bg-gray-400 cursor-not-allowed">
+                                                    No Attempts Left
                                                 </x-primary-button>
-                                            </form>
+                                            @endif
                                         </div>
                                     </div>
                                 @empty

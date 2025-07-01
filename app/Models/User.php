@@ -66,6 +66,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(StudentGrade::class, 'teacher_id');
     }
 
+    public function quizAttempts(): HasMany
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
     public function enrolledCourses(): BelongsToMany
     {
         return $this->belongsToMany(Course::class, 'enrollments', 'user_id', 'course_id')->withTimestamps();
@@ -100,8 +105,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(LearningPath::class, 'learning_path_user');
     }
 
-    public function quizAttempts(): HasMany
+    public function assignmentSubmissions(): HasMany
     {
-        return $this->hasMany(QuizAttempt::class, 'student_id');
+        return $this->hasMany(AssignmentSubmission::class, 'student_id');
     }
 }

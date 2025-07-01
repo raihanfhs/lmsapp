@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Http\Requests\StoreQuizRequest;
 use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\UpdateQuizRequest;
 
 class QuizController extends Controller
 {
@@ -65,17 +66,29 @@ class QuizController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Course $course, Quiz $quiz): View
     {
-        //
+        return view('teacher.quizzes.edit', compact('course', 'quiz'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Course $course, Quiz $quiz): RedirectResponse
     {
-        //
+        $validatedData = $request->validate([
+            'title' => ['required', 'string', 'max:255', Rule::unique('quizzes')->where('course_id', $course->id)->ignore($quiz->id)],
+            'description'   => 'nullable|string',
+            'duration'      => 'required|integer|min:1',
+            // 👇 ENSURE THIS LINE IS CORRECT
+            'pass_grade'    => 'required|integer|min:0|max:100', 
+            'max_attempts'  => 'nullable|integer|min:1',
+        ]);
+
+        $quiz->update($validatedData);
+
+        return redirect()->route('teacher.quizzes.index', $course)
+                        ->with('success', 'Quiz updated successfully!');
     }
 
     /**
