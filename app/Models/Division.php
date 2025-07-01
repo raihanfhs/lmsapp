@@ -4,29 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User; // Import User model for the relationship
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Division extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
-        'description',
-        // 'slug', // Add if you included it in the migration and want it fillable
     ];
 
-    /**
-     * Get the users that belong to this division.
-     * Defines a one-to-many relationship.
-     */
-    public function users()
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * Get all of the courses for the division.
+     */
+    public function courses(): HasMany
+    {
+        return $this->hasMany(Course::class);
     }
 }
