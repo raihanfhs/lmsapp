@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
+use App\Exports\CourseProgressExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
+
 
 class CourseController extends Controller
 {
@@ -219,7 +223,7 @@ class CourseController extends Controller
         // Eager load the necessary data to avoid multiple database queries.
         // We get the course's enrollments, and for each enrollment, the student.
         // We also get all grades that have been given for this course.
-        $course->load('enrollments.student', 'grades');
+        $course->load('enrollments.student', 'enrollments.course.grades');
 
         // We will map over the enrollments to create a clean data structure for our view.
         $studentsProgress = $course->enrollments->map(function ($enrollment) {
@@ -242,5 +246,19 @@ class CourseController extends Controller
             'studentsProgress' => $studentsProgress,
         ]);
     }
-    
+
+    public function exportProgress(Course $course)
+    {
+        // Generate a clean, URL-friendly version of the course title for the filename.
+        $safeTitle = Str::slug($course->title, '-');
+
+        // Define the filename for the downloaded Excel file.
+        $fileName = 'progress-' . $safeTitle . '.xlsx';
+
+        // Trigger the download.
+        // This creates a new instance of our export class and passes the course to it.
+        // The Excel package handles the rest.
+        return Excel::download(new CourseProgressExport($course), $fileName);
+    }
+
 }

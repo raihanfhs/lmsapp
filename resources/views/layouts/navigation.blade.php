@@ -32,6 +32,9 @@
                         <x-nav-link :href="route('pengelola.dashboard')" :active="request()->routeIs('pengelola.dashboard')">
                             {{ __('Pengelola Dashboard') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('pengelola.teacher.engagement')" :active="request()->routeIs('pengelola.teacher.engagement')">
+                            {{ __('Teacher Engagement') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('pengelola.courses.index')" :active="request()->routeIs('pengelola.courses.*')">
                             {{ __('Manage Courses') }}
                         </x-nav-link>

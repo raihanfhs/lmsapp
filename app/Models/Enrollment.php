@@ -26,4 +26,9 @@ class Enrollment extends Model // Using Model is usually fine
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
+    }
 }

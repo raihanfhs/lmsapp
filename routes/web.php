@@ -73,10 +73,12 @@ Route::middleware(['auth', 'verified', 'role:Admin'])->prefix('admin')->name('ad
 // Protected by 'auth', 'verified', and the 'role:Pengelola' middleware.
 Route::middleware(['auth', 'verified', 'role:Pengelola'])->prefix('pengelola')->name('pengelola.')->group(function () {
     Route::get('/dashboard', [PengelolaDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/teacher-engagement', [PengelolaDashboardController::class, 'teacherEngagement'])->name('teacher.engagement');
 
     // Course Management for Pengelola
     Route::resource('courses', PengelolaCourseController::class);
     Route::get('/courses/{course}/progress', [PengelolaCourseController::class, 'progress'])->name('courses.progress');
+    Route::get('/courses/{course}/progress/export', [PengelolaCourseController::class, 'exportProgress'])->name('courses.progress.export');
 
     // Routes for Assigning Teachers to a Course (managed by Pengelola)
     Route::get('/courses/{course}/assign-teachers', [PengelolaCourseController::class, 'assignTeachersForm'])

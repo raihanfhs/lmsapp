@@ -119,7 +119,7 @@ class Course extends Model
 
     public function studentGrade(User $student)
     {
-        return $this->grade()->where('student_id', $student->id)->first();
+        return $this->grades()->where('student_id', $student->id)->first();
     }
 
     // Method pembantu untuk mencari sertifikat seorang student di kursus ini
