@@ -2,10 +2,6 @@
 
 namespace App\Http\Controllers;
 
-// Import Request if you need to use it, not strictly necessary for this simple redirect
-// use Illuminate\Http\Request;
-
-// Import the Auth facade to get the authenticated user
 use Illuminate\Support\Facades\Auth;
 // Import RedirectResponse for type hinting (optional but good practice)
 use Illuminate\Http\RedirectResponse;
@@ -20,22 +16,20 @@ class DashboardController extends Controller
      * @param  \Illuminate\Http\Request  $request // Parameter can be removed if not used
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function index(): RedirectResponse // The method name matches the route definition
+    public function index()
     {
         $user = Auth::user();
-        
-        if ($user->hasRole('Admin')) {
+        if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
-        } elseif ($user->hasRole('Pengelola')) { // <-- ADD THIS BLOCK
-            return redirect()->route('pengelola.dashboard');
-        } elseif ($user->hasRole('Teacher')) {
+        } elseif ($user->hasRole('teacher')) {
             return redirect()->route('teacher.dashboard');
-        } elseif ($user->hasRole('Student')) {
+        } elseif ($user->hasRole('student')) {
             return redirect()->route('student.dashboard');
-        } else {
-            // Fallback ...
-            Auth::logout();
-            return redirect()->route('login')->with('error', 'No dashboard assigned for your role.');
+        } elseif ($user->hasRole('pengelola')) {
+            return redirect()->route('pengelola.dashboard');
+        } elseif ($user->hasRole('chief')) { // 👇 ADD THIS NEW CONDITION
+            return redirect()->route('chief.dashboard');
         }
+        return view('dashboard');
     }
 }

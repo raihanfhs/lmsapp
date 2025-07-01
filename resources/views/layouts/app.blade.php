@@ -36,4 +36,5 @@
         </div>
         <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
     </body>
+    @stack('scripts')
 </html>
