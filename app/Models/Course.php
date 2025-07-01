@@ -97,7 +97,7 @@ class Course extends Model
      * Get the grades recorded for students in this course.
      * Defines a one-to-many relationship.
      */
-    public function studentGrades()
+    public function grades()
     {
         return $this->hasMany(StudentGrade::class);
     }
@@ -119,7 +119,7 @@ class Course extends Model
 
     public function studentGrade(User $student)
     {
-        return $this->studentGrades()->where('student_id', $student->id)->first();
+        return $this->grade()->where('student_id', $student->id)->first();
     }
 
     // Method pembantu untuk mencari sertifikat seorang student di kursus ini
