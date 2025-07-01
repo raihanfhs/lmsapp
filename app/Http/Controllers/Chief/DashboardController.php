@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Chief;
 
 use App\Http\Controllers\Controller;
-use App\Models\User; // Already there
-use App\Models\Course; // <--- ADD THIS LINE
+use App\Models\User;
+use App\Models\Course; // Make sure this is imported
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role; // Already there
+use Spatie\Permission\Models\Role;
 
 class DashboardController extends Controller
 {
     public function index(): View
     {
-        // 1. Data for Users by Role (already implemented, just ensure it's there)
+        // ... (usersByRole data as before) ...
         $rolesWithUsers = Role::withCount('users')->get();
         $usersByRole = $rolesWithUsers->map(function ($role) {
             return (object) [
@@ -43,7 +43,6 @@ class DashboardController extends Controller
         ];
 
         // 3. Data for New User Registrations Over Time (Line Chart)
-        // Group users by month and year of creation
         $newUsersByMonth = User::select(
                 DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
                 DB::raw('count(*) as count')
@@ -67,7 +66,7 @@ class DashboardController extends Controller
 
         $courseStatusData = [
             'labels' => $coursesByStatus->pluck('status')->map(function($status) {
-                return ucfirst($status); // Capitalize first letter
+                return ucfirst($status);
             })->toArray(),
             'data' => $coursesByStatus->pluck('count')->toArray(),
             'backgroundColor' => [
@@ -82,11 +81,12 @@ class DashboardController extends Controller
             ]
         ];
 
+
         return view('chief.dashboard', compact(
             'usersByRole',
-            'userVerificationStatus', // <--- Pass new data
-            'userRegistrationTrends', // <--- Pass new data
-            'courseStatusData'        // <--- Pass new data
+            'userVerificationStatus',
+            'userRegistrationTrends',
+            'courseStatusData'
         ));
     }
 }

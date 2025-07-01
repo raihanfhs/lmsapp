@@ -44,13 +44,43 @@
         </div>
     </div>
 
-    @push('scripts')
-    {{-- Memuat library Chart.js dari CDN --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @@push('scripts')
+    {{-- Memuat library Chart.js dari CDN (menggunakan 'auto' untuk memastikan semua komponen dimuat dan terdaftar secara internal) --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // --- Debugging: Log the Chart object and its properties ---
+            // This is primarily for diagnostics if the 'auto' CDN doesn't fix it.
+            // console.log('Chart global object:', Chart);
+            // console.log('Chart.controllers:', Chart.controllers);
+            // console.log('Chart.elements:', Chart.elements);
+            // console.log('Chart.scales:', Chart.scales);
+            // console.log('Chart.plugins:', Chart.plugins);
+            // --- End Debugging ---
 
-            // 1. Users by Role Chart (existing)
+            // With chart.js/auto, controllers and other elements are often
+            // registered automatically. If they are not, you would typically
+            // register them like this:
+            // Chart.register(
+            //     Chart.controllers.bar,
+            //     Chart.controllers.line,
+            //     Chart.controllers.pie,
+            //     Chart.elements.arc,
+            //     Chart.scales.category,
+            //     Chart.scales.linear,
+            //     Chart.plugins.title,
+            //     Chart.plugins.tooltip,
+            //     Chart.plugins.legend
+            // );
+
+            // If using chart.js/auto, the explicit Chart.register calls for *individual controllers*
+            // might not be necessary, as 'auto' registers everything. The issue is likely
+            // that the previous manual Chart.register was incorrect or redundant.
+            // Let's remove the explicit Chart.register calls for now with `chart.js/auto`.
+
+
+            // 1. Users by Role Chart (existing bar chart)
             const rawDataUsersByRole = @json($usersByRole);
             const labelsUsersByRole = rawDataUsersByRole.map(item => item.role.charAt(0).toUpperCase() + item.role.slice(1));
             const dataPointsUsersByRole = rawDataUsersByRole.map(item => item.count);
@@ -76,6 +106,11 @@
                                 ticks: {
                                     stepSize: 1
                                 }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
                             }
                         }
                     }
@@ -105,7 +140,7 @@
                                 position: 'top',
                             },
                             title: {
-                                display: false, // Title is already in H3
+                                display: false,
                             }
                         }
                     }
@@ -121,12 +156,12 @@
                     data: {
                         labels: userRegistrationTrends.labels,
                         datasets: [{
-                            label: userRegistrationTrends.label,
+                            label: 'New User Registrations', // Use a default label or pass from controller
                             data: userRegistrationTrends.data,
                             borderColor: userRegistrationTrends.borderColor,
                             backgroundColor: userRegistrationTrends.backgroundColor,
-                            fill: true, // Fill area under the line
-                            tension: 0.1 // Makes the line curved
+                            fill: true,
+                            tension: 0.1
                         }]
                     },
                     options: {
