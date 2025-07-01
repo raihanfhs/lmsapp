@@ -61,7 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 | Chief Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:chief'])->name('chief.')->prefix('chief')->group(function () {
+Route::middleware(['auth', 'role:Chief'])->name('chief.')->prefix('chief')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Chief\DashboardController::class, 'index'])->name('dashboard');
 });
 

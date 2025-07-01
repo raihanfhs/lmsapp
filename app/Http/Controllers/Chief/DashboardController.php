@@ -3,30 +3,25 @@
 namespace App\Http\Controllers\Chief;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\User; // Already there
+use App\Models\Course; // <--- ADD THIS LINE
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Role; // Already there
 
 class DashboardController extends Controller
 {
     public function index(): View
     {
-        dd('Chief Dashboard Controller hit!'); // <--- ADD THIS LINE HERE
-
-        // ... rest of your code ...
-        // (You can keep the corrected query logic from before)
-
+        // 1. Data for Users by Role (already implemented, just ensure it's there)
         $rolesWithUsers = Role::withCount('users')->get();
-
         $usersByRole = $rolesWithUsers->map(function ($role) {
             return (object) [
                 'role' => $role->name,
                 'count' => $role->users_count,
             ];
         });
-
         if ($usersByRole->isEmpty()) {
             $usersByRole = collect([
                 (object)['role' => 'Teacher', 'count' => 5],
@@ -37,6 +32,61 @@ class DashboardController extends Controller
             ]);
         }
 
-        return view('chief.dashboard', compact('usersByRole'));
+        // 2. Data for User Verification Status (Pie Chart)
+        $verifiedUsersCount = User::whereNotNull('email_verified_at')->count();
+        $unverifiedUsersCount = User::whereNull('email_verified_at')->count();
+        $userVerificationStatus = [
+            'labels' => ['Verified', 'Unverified'],
+            'data' => [$verifiedUsersCount, $unverifiedUsersCount],
+            'backgroundColor' => ['#4CAF50', '#FFC107'], // Green for Verified, Amber for Unverified
+            'borderColor' => ['#4CAF50', '#FFC107'],
+        ];
+
+        // 3. Data for New User Registrations Over Time (Line Chart)
+        // Group users by month and year of creation
+        $newUsersByMonth = User::select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                DB::raw('count(*) as count')
+            )
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $userRegistrationTrends = [
+            'labels' => $newUsersByMonth->pluck('month')->toArray(),
+            'data' => $newUsersByMonth->pluck('count')->toArray(),
+            'label' => 'New User Registrations',
+            'borderColor' => '#007bff', // Blue
+            'backgroundColor' => 'rgba(0, 123, 255, 0.2)',
+        ];
+
+        // 4. Data for Courses by Status (New Bar Chart)
+        $coursesByStatus = Course::select('status', DB::raw('count(*) as count'))
+                                 ->groupBy('status')
+                                 ->get();
+
+        $courseStatusData = [
+            'labels' => $coursesByStatus->pluck('status')->map(function($status) {
+                return ucfirst($status); // Capitalize first letter
+            })->toArray(),
+            'data' => $coursesByStatus->pluck('count')->toArray(),
+            'backgroundColor' => [
+                'rgba(255, 99, 132, 0.7)', // Draft (Red)
+                'rgba(54, 162, 235, 0.7)', // Published (Blue)
+                'rgba(255, 206, 86, 0.7)'  // Archived (Yellow)
+            ],
+            'borderColor' => [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)'
+            ]
+        ];
+
+        return view('chief.dashboard', compact(
+            'usersByRole',
+            'userVerificationStatus', // <--- Pass new data
+            'userRegistrationTrends', // <--- Pass new data
+            'courseStatusData'        // <--- Pass new data
+        ));
     }
 }
