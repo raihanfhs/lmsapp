@@ -111,6 +111,12 @@ class Course extends Model
         return $this->hasMany(Certificate::class);
     }
 
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
+
     public function studentGrade(User $student)
     {
         return $this->studentGrades()->where('student_id', $student->id)->first();
