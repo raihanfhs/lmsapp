@@ -55,6 +55,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::post('/profile', [ProfileController::class, 'store'])->name('profile.store');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Chief Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:chief'])->name('chief.')->prefix('chief')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Chief\DashboardController::class, 'index'])->name('dashboard');
+});
+
 
 // --- Admin Routes ---
 // Protected by 'auth', 'verified', and the 'role:Admin' middleware.

@@ -44,6 +44,13 @@
                         {{-- You might add "Assign Teachers" here too, or access it via the courses list --}}
                     @endhasrole
 
+                    {{-- Chief --}}
+                    @if (Auth::user()->role == 'chief')
+                        <x-nav-link :href="route('chief.dashboard')" :active="request()->routeIs('chief.dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                    @endif
+
                     @hasrole('Teacher')
                         <x-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">
                             {{ __('Teacher Dashboard') }}
