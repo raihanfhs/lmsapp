@@ -33,7 +33,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $assignment->total_points }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             {{-- We will build this submissions link in a future step --}}
-                                            <a href="#" class="text-green-600 hover:text-green-900 mr-4">Submissions</a>
+                                            <a href="{{ route('teacher.assignments.submissions.index', $assignment) }}" class="text-green-600 hover:text-green-900 mr-4">Submissions</a>
                                             <a href="{{ route('teacher.assignments.edit', [$course, $assignment]) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
                                             <form action="{{ route('teacher.assignments.destroy', [$course, $assignment]) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this assignment? This cannot be undone.');">
                                                 @csrf

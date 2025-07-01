@@ -144,6 +144,8 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
     ->only(['store', 'destroy']);
 
     Route::resource('courses/{course}/assignments', \App\Http\Controllers\Teacher\AssignmentController::class);
+    Route::get('/assignments/{assignment}/submissions', [\App\Http\Controllers\Teacher\AssignmentController::class, 'viewSubmissions'])->name('assignments.submissions.index');
+    Route::post('/submissions/{submission}/grade', [\App\Http\Controllers\Teacher\AssignmentController::class, 'gradeSubmission'])->name('assignments.submissions.grade');
 
 });
 

@@ -8,6 +8,7 @@ use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use App\Models\AssignmentSubmission;
 
 class AssignmentController extends Controller
 {
@@ -78,4 +79,32 @@ class AssignmentController extends Controller
         $assignment->delete();
         return redirect()->route('teacher.assignments.index', $course)->with('success', 'Assignment deleted successfully.');
     }
-}
+
+    public function viewSubmissions(Assignment $assignment): View
+    {
+        // Eager load the student details for each submission to display their name
+        $assignment->load('submissions.student');
+
+        return view('teacher.assignments.submissions.index', [
+            'assignment' => $assignment,
+        ]);
+    }
+
+    /**
+     * Store the grade and feedback for a specific submission.
+     */
+    public function gradeSubmission(Request $request, AssignmentSubmission $submission): RedirectResponse
+    {
+        $assignment = $submission->assignment;
+
+        $validated = $request->validate([
+            'points_awarded' => 'required|integer|min:0|max:' . $assignment->total_points,
+            'teacher_feedback' => 'nullable|string|max:5000',
+        ]);
+
+        $submission->update($validated);
+
+        return redirect()->route('teacher.assignments.submissions.index', $assignment)
+                        ->with('success', 'Grade has been saved successfully!');
+    }
+    }
