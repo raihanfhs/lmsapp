@@ -63,6 +63,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 */
 Route::middleware(['auth', 'role:Chief'])->name('chief.')->prefix('chief')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Chief\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/reports/users/excel', [\App\Http\Controllers\Chief\DashboardController::class, 'exportUsersExcel'])->name('reports.users.excel');
+    Route::get('/reports/users/pdf', [\App\Http\Controllers\Chief\DashboardController::class, 'exportUsersPdf'])->name('reports.users.pdf');
+
 });
 
 // --- Admin Routes ---

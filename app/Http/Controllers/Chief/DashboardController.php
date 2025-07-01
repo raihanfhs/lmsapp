@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Maatwebsite\Excel\Facades\Excel; // <--- ADD THIS
+use App\Exports\UsersExport;        // <--- ADD THIS
+use Barryvdh\DomPDF\Facade\Pdf;   
 
 class DashboardController extends Controller
 {
@@ -88,5 +91,20 @@ class DashboardController extends Controller
             'userRegistrationTrends',
             'courseStatusData'
         ));
+    }
+    public function exportUsersExcel()
+    {
+        return Excel::download(new UsersExport, 'users_report.xlsx');
+    }
+
+    /**
+     * Export all users to a PDF file.
+     * @return \Illuminate\Http\Response
+     */
+    public function exportUsersPdf()
+    {
+        $users = User::with('roles')->get(); // Fetch users to pass to PDF view
+        $pdf = Pdf::loadView('reports.users_pdf', compact('users'));
+        return $pdf->download('users_report.pdf');
     }
 }
