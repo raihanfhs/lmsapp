@@ -31,10 +31,16 @@
                             <x-input-error :messages="$errors->get('duration')" class="mt-2" />
                         </div>
 
-                         <div class="mt-4">
+                        <div class="mt-4">
                             <x-input-label for="passing_grade" :value="__('Passing Grade (%)')" />
                             <x-text-input id="passing_grade" class="block mt-1 w-full" type="number" name="passing_grade" :value="old('passing_grade', 70)" min="0" max="100" required />
                             <x-input-error :messages="$errors->get('passing_grade')" class="mt-2" />
+                        </div>
+
+                        <div class="mt-4">
+                            <x-input-label for="max_attempts" :value="__('Max Attempts (Leave blank for unlimited)')" />
+                            <x-text-input id="max_attempts" class="block mt-1 w-full" type="number" name="max_attempts" :value="old('max_attempts')" min="1" />
+                            <x-input-error :messages="$errors->get('max_attempts')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end mt-6">
