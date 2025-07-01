@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+// Import Request if you need to use it, not strictly necessary for this simple redirect
+// use Illuminate\Http\Request;
+
+// Import the Auth facade to get the authenticated user
 use Illuminate\Support\Facades\Auth;
 // Import RedirectResponse for type hinting (optional but good practice)
 use Illuminate\Http\RedirectResponse;
@@ -19,9 +23,6 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        if ($user->email === 'chief@lms.test') {
-        return redirect()->route('chief.dashboard');
-        }
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
         } elseif ($user->hasRole('teacher')) {
@@ -30,7 +31,7 @@ class DashboardController extends Controller
             return redirect()->route('student.dashboard');
         } elseif ($user->hasRole('pengelola')) {
             return redirect()->route('pengelola.dashboard');
-        } elseif ($user->hasRole('Chief')) { 
+        } elseif ($user->hasRole('chief')) { // 👇 ADD THIS NEW CONDITION
             return redirect()->route('chief.dashboard');
         }
         return view('dashboard');
