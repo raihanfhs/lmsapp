@@ -17,6 +17,7 @@ class Quiz extends Model
         'description',
         'duration',
         'passing_grade',
+        'max_attempts',
     ];
 
     public function course(): BelongsTo
