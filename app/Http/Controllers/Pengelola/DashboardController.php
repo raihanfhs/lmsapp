@@ -22,9 +22,9 @@ class DashboardController extends Controller
         //    - teachingCourses: to count assigned courses.
         //    - teachingCourses.materials: to count all materials within those courses.
         //    - gradesGiven: the relationship we just created to count graded students.
-        $teachers = User::where('role', 'teacher')
-            ->with('teachingCourses.materials', 'gradesGiven')
-            ->get();
+        $teachers = User::role('Teacher') // This is the correct Spatie syntax
+        ->with('teachingCourses.materials', 'gradesGiven')
+        ->get();
 
         // Map the data into a simpler format for the view
         $teacherStats = $teachers->map(function ($teacher) {
