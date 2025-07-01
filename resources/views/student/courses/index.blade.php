@@ -21,33 +21,35 @@
                                    </th>
                                </tr>
                            </thead>
-                           <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                               @forelse ($courses as $course)
-                                   <tr>
-                                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $course->title }}</td>
-                                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $course->course_code ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $course->teacher?->name ?? 'N/A' }}</td> {{-- Access teacher name via relationship --}}
-                                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {{-- Make the title a link --}}
-                                        <a href="{{ route('student.courses.show', $course->id) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                            {{ $course->title }}
-                                        </a>
+                            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                @forelse ($enrollments as $enrollment)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <a href="{{ route('student.courses.show', $enrollment->course->id) }}" class="text-blue-600 hover:text-blue-900">
+                                                {{ $enrollment->course->title }}
+                                            </a>
                                         </td>
-                                        {{-- Add link to view course content later --}}
-                                        {{-- <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900">View</a> --}}
-                                       </td>
-                                   </tr>
-                               @empty
-                                   <tr>
-                                       <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">You are not enrolled in any courses.</td>
-                                   </tr>
-                               @endforelse
-                           </tbody>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $enrollment->course->course_code }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {{-- This will now work correctly --}}
+                                            {{ $enrollment->course->teachers->pluck('name')->join(', ') ?: 'N/A' }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                            You are not enrolled in any courses yet.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
                        </table>
                    </div>
                    <div class="mt-4">
-                       {{ $courses->links() }} {{-- Pagination links --}}
+                        {{-- Use the correct variable from the controller --}}
+                        {{ $enrollments->links() }} {{-- Pagination links --}}
                    </div>
                 </div>
             </div>

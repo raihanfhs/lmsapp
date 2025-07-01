@@ -94,6 +94,43 @@
                         </x-card>
                     </div>
 
+                    <div class="mt-6">
+                        <x-card>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                                {{ __('Assignments') }}
+                            </h3>
+                            <div class="space-y-4">
+                                @forelse ($course->assignments as $assignment)
+                                    @php
+                                        // Check if the current student has a submission for this specific assignment
+                                        $submission = $student->assignmentSubmissions->firstWhere('assignment_id', $assignment->id);
+                                    @endphp
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                        <div>
+                                            <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $assignment->title }}</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                Due: {{ $assignment->due_date ? \Carbon\Carbon::parse($assignment->due_date)->format('d M Y') : 'No due date' }} | Points: {{ $assignment->total_points }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            @if ($submission)
+                                                <span class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded-full">
+                                                    Submitted
+                                                </span>
+                                            @else
+                                                {{-- We will create this route in the next step --}}
+                                                <a href="#" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                                                    Submit Work
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-gray-500 dark:text-gray-400">There are no assignments for this course yet.</p>
+                                @endforelse
+                            </div>
+                        </x-card>
+                    </div>
                 </div>
 
                 {{-- KOLOM KANAN (Sidebar Info) --}}

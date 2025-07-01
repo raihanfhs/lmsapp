@@ -93,6 +93,11 @@ class Course extends Model
         return $this->hasMany(Meeting::class)->orderBy('meeting_datetime', 'asc');
     }
 
+    public function onlineMeetings(): HasMany
+    {
+        return $this->meetings(); // Redirects to the correct relationship
+    }
+
     /**
      * Get the grades recorded for students in this course.
      * Defines a one-to-many relationship.

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Student\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -18,12 +19,14 @@ class CourseController extends Controller
      */
     public function index(): View
     {
-        // Get enrolled courses for the currently authenticated student
-        $courses = Auth::user()->enrolledCourses()->latest()->paginate(10); // Paginate results
 
-        // Return the view to display the enrolled courses
-        // View file: resources/views/student/courses/index.blade.php (created in Phase 7)
-        return view('student.courses.index', compact('courses'));
+        $enrollments = \App\Models\Enrollment::where('user_id', Auth::id()) 
+                                        ->with('course.teachers')
+                                        ->latest()
+                                        ->paginate(10);
+
+        // Pass the correct 'enrollments' variable to the view
+        return view('student.courses.index', compact('enrollments'));
     }
 
         /**
@@ -36,37 +39,29 @@ class CourseController extends Controller
     {
         $user = Auth::user();
 
-        // Authorization Check 1: Is the user enrolled in this course?
-        // Check if the course ID exists in the collection of courses the user is enrolled in.
+        // Check if the user is enrolled
         if (!$user->enrolledCourses()->where('course_id', $course->id)->exists()) {
             abort(403, 'You are not enrolled in this course.');
         }
 
-        // Fetch the course (already injected) and eager load its materials, ordered correctly.
-        // We load ALL materials and will handle hierarchy display in the view for simplicity first.
+        // Eager load all necessary relationships in a single, clean call
         $course->load([
-            'materials' => function ($query) { /* ... */ },
-            'onlineMeetings' => function ($query) { /* ... */ },
-            'teachers' // <-- CRUCIAL: This loads the teachers
+            'materials' => function ($query) {
+                $query->orderBy('order', 'asc');
+            },
+            'quizzes' => function ($query) {
+                $query->withCount('questions');
+            },
+            'assignments.submissions',
+            'teachers'
         ]);
-        
-        $course->load([
-                'materials' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                },
-                'quizzes' => function ($query) {
-                    $query->withCount('questions'); // Menghitung pertanyaan dengan efisien
-                },
-                'teachers' // Cukup muat relasi teachers saja
-            ]);
 
-        $student = Auth::user()->load('quizAttempts');
-        
-        $student->load(['studentGrades' => fn($q) => $q->where('course_id', $course->id),
-                        'certificates' => fn($q) => $q->where('course_id', $course->id)]);
+        $student = $user->load('quizAttempts', 'assignmentSubmissions', 'studentGrades', 'certificates');
 
-        return view('student.courses.show', compact('course', 'student')); 
+        return view('student.courses.show', compact('course', 'student'));
     }
+
+
 
     /**
      * Display a listing of all available courses for students to browse and enroll.
