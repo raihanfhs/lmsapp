@@ -149,9 +149,6 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
 
 
 // --- Student Routes ---
-// Protected by 'auth', 'verified', and the 'role:Student' middleware.
-// URLs will start with /student/
-// Route names will start with student.
 Route::middleware(['auth', 'verified', 'role:Student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', StudentDashboardController::class)->name('dashboard');
     // Route for viewing courses the student is enrolled in
@@ -168,6 +165,8 @@ Route::middleware(['auth', 'verified', 'role:Student'])->prefix('student')->name
     Route::post('/quiz-attempts/{quizAttempt}/submit', [QuizAttemptController::class, 'submit'])->name('quiz_attempts.submit');
     Route::get('/quiz-attempts/{quizAttempt}/results', [QuizAttemptController::class, 'results'])->name('quiz_attempts.results');
     Route::get('/my-quiz-attempts', [QuizAttemptController::class, 'history'])->name('quiz_attempts.history');
+    Route::get('/assignments/{assignment}/submit', [\App\Http\Controllers\Student\AssignmentSubmissionController::class, 'create'])->name('assignments.submission.create');
+    Route::post('/assignments/{assignment}/submit', [\App\Http\Controllers\Student\AssignmentSubmissionController::class, 'store'])->name('assignments.submission.store');
 });
 
 Route::post('/trix/upload', [TrixController::class, 'store'])->name('trix.store');
