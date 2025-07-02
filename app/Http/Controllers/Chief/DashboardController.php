@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Maatwebsite\Excel\Facades\Excel; // <--- ADD THIS
 use App\Exports\UsersExport;        // <--- ADD THIS
-use Barryvdh\DomPDF\Facade\Pdf;   
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\DashboardReportExport; 
 
 class DashboardController extends Controller
 {
@@ -84,27 +85,119 @@ class DashboardController extends Controller
             ]
         ];
 
+        $data = $this->getDashboardChartData();
 
-        return view('chief.dashboard', compact(
+        return view('chief.dashboard', $data, compact(
             'usersByRole',
             'userVerificationStatus',
             'userRegistrationTrends',
             'courseStatusData'
         ));
+
     }
-    public function exportUsersExcel()
+
+        /**
+     * Export a comprehensive dashboard report to Excel with multiple sheets.
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportDashboardExcel()
     {
-        return Excel::download(new UsersExport, 'users_report.xlsx');
+        // Get all chart data
+        $data = $this->getDashboardChartData();
+        return Excel::download(new DashboardReportExport($data), 'executive_dashboard_report.xlsx');
     }
 
     /**
-     * Export all users to a PDF file.
+     * Export a comprehensive dashboard report to PDF.
      * @return \Illuminate\Http\Response
      */
-    public function exportUsersPdf()
+    public function exportDashboardPdf()
     {
-        $users = User::with('roles')->get(); // Fetch users to pass to PDF view
-        $pdf = Pdf::loadView('reports.users_pdf', compact('users'));
-        return $pdf->download('users_report.pdf');
+        // Get all chart data
+        $data = $this->getDashboardChartData();
+        $pdf = Pdf::loadView('reports.executive_dashboard_pdf', $data); // Use a new PDF view
+        return $pdf->download('executive_dashboard_report.pdf');
     }
+
+    /**
+     * Private method to fetch all data required for dashboard charts and reports.
+     * @return array
+     */
+    private function getDashboardChartData(): array
+    {
+        // 1. Data for Users by Role
+        $rolesWithUsers = Role::withCount('users')->get();
+        $usersByRole = $rolesWithUsers->map(function ($role) {
+            return (object) [
+                'role' => $role->name,
+                'count' => $role->users_count,
+            ];
+        });
+        if ($usersByRole->isEmpty()) {
+            $usersByRole = collect([
+                (object)['role' => 'Teacher', 'count' => 5],
+                (object)['role' => 'Student', 'count' => 30],
+                (object)['role' => 'Admin', 'count' => 1],
+                (object)['role' => 'Pengelola', 'count' => 2],
+                (object)['role' => 'Chief', 'count' => 1],
+            ]);
+        }
+
+        // 2. Data for User Verification Status (Pie Chart)
+        $verifiedUsersCount = User::whereNotNull('email_verified_at')->count();
+        $unverifiedUsersCount = User::whereNull('email_verified_at')->count();
+        $userVerificationStatus = [
+            'labels' => ['Verified', 'Unverified'],
+            'data' => [$verifiedUsersCount, $unverifiedUsersCount],
+            'backgroundColor' => ['#4CAF50', '#FFC107'],
+            'borderColor' => ['#4CAF50', '#FFC107'],
+        ];
+
+        // 3. Data for New User Registrations Over Time (Line Chart)
+        $newUsersByMonth = User::select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                DB::raw('count(*) as count')
+            )
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $userRegistrationTrends = [
+            'labels' => $newUsersByMonth->pluck('month')->toArray(),
+            'data' => $newUsersByMonth->pluck('count')->toArray(),
+            'label' => 'New User Registrations',
+            'borderColor' => '#007bff',
+            'backgroundColor' => 'rgba(0, 123, 255, 0.2)',
+        ];
+
+        // 4. Data for Courses by Status (Bar Chart)
+        $coursesByStatus = Course::select('status', DB::raw('count(*) as count'))
+                                 ->groupBy('status')
+                                 ->get();
+
+        $courseStatusData = [
+            'labels' => $coursesByStatus->pluck('status')->map(function($status) {
+                return ucfirst($status);
+            })->toArray(),
+            'data' => $coursesByStatus->pluck('count')->toArray(),
+            'backgroundColor' => [
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.7)'
+            ],
+            'borderColor' => [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)'
+            ]
+        ];
+        // Return all collected data as an associative array
+        return [
+            'usersByRole' => $usersByRole,
+            'userVerificationStatus' => $userVerificationStatus,
+            'userRegistrationTrends' => $userRegistrationTrends,
+            'courseStatusData' => $courseStatusData,
+        ];
+    }
+
 }

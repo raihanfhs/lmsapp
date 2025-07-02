@@ -63,8 +63,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 */
 Route::middleware(['auth', 'role:Chief'])->name('chief.')->prefix('chief')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Chief\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/reports/users/excel', [\App\Http\Controllers\Chief\DashboardController::class, 'exportUsersExcel'])->name('reports.users.excel');
-    Route::get('/reports/users/pdf', [\App\Http\Controllers\Chief\DashboardController::class, 'exportUsersPdf'])->name('reports.users.pdf');
+    // --- NEW COMPREHENSIVE REPORT ROUTES ---
+    Route::get('/reports/dashboard/excel', [\App\Http\Controllers\Chief\DashboardController::class, 'exportDashboardExcel'])->name('reports.dashboard.excel');
+    Route::get('/reports/dashboard/pdf', [\App\Http\Controllers\Chief\DashboardController::class, 'exportDashboardPdf'])->name('reports.dashboard.pdf');
+    // --- END NEW COMPREHENSIVE REPORT ROUTES ---
 
 });
 
