@@ -20,10 +20,10 @@ class CourseMaterial extends Model
         'course_id',
         'title',
         'description',
-        'file_path',
+        'content',
         'parent_id',
         'order',
-        'file_type', // <-- ADD THIS LINE
+        'type',
     ];
     
 

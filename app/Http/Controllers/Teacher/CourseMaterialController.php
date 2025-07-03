@@ -67,16 +67,17 @@ class CourseMaterialController extends Controller
         return redirect()->route('teacher.courses.show', $course->id)
                          ->with('success', 'Material added successfully!');
     }
-    public function edit(CourseMaterial $material): View
+    public function edit(Course $course, CourseMaterial $material): View 
     {
-        // This is a placeholder. We will build this out later.
-        return view('teacher.materials.edit', compact('material'));
+
+        
+        return view('teacher.materials.edit', compact('course', 'material')); 
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, CourseMaterial $material): RedirectResponse
+    public function update(Request $request, Course $course, CourseMaterial $material): RedirectResponse
     {
         // This method will need to be updated later to support the new multi-type system.
         $validated = $request->validate([
@@ -92,7 +93,7 @@ class CourseMaterialController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CourseMaterial $material): RedirectResponse
+    public function destroy(Course $course, CourseMaterial $material): RedirectResponse
     {
         $courseId = $material->course_id;
         

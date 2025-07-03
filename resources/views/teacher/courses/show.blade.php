@@ -45,7 +45,8 @@
                                         <span class="text-gray-800 dark:text-gray-200 font-semibold">{{ $material->title }}</span>
                                         <div>
                                             <a href="{{ route('teacher.courses.materials.edit', ['course' => $course->id, 'material' => $material->id]) }}" class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 mr-3 text-sm">Edit</a>
-                                            <form action="{{ route('teacher.courses.materials.destroy', ['course' => $course->id, 'material' => $material->id]) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this material?');">
+
+                                            <form action="{{ route('teacher.courses.materials.destroy', ['course' => $course, 'material' => $material]) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this material?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="font-medium text-red-600 dark:text-red-400 hover:text-red-500 text-sm">Delete</button>

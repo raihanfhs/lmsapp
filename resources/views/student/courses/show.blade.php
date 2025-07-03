@@ -131,6 +131,33 @@
                             </div>
                         </x-card>
                     </div>
+                    <div class="mt-6">
+                        <x-card class="mt-4">
+                            <h2 class="text-xl font-semibold mb-4">{{ __('Scheduled Meetings') }}</h2>
+                            @if($course->meetings->isNotEmpty())
+                                <ul>
+                                    @foreach($course->meetings as $meeting)
+                                        <li class="mb-2">
+                                            <h3 class="font-medium">{{ $meeting->title }}</h3>
+                                            <p class="text-sm text-gray-600">
+                                                {{ \Carbon\Carbon::parse($meeting->start_time)->format('M d, Y H:i') }} -
+                                                {{ \Carbon\Carbon::parse($meeting->end_time)->format('H:i') }}
+                                                ({{ $meeting->type == 'online' ? 'Online' : 'Offline' }})
+                                            </p>
+                                            @if($meeting->type == 'online' && $meeting->link)
+                                                <p class="text-sm text-gray-600">Link: <a href="{{ $meeting->link }}" target="_blank" class="text-blue-500 hover:underline">{{ $meeting->link }}</a></p>
+                                            @elseif($meeting->type == 'offline' && $meeting->location)
+                                                <p class="text-sm text-gray-600">Location: {{ $meeting->location }}</p>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <p>{{ __('No meetings scheduled for this course yet.') }}</p>
+                            @endif
+                        </x-card>
+                    </div>
+                        
                 </div>
 
                 {{-- KOLOM KANAN (Sidebar Info) --}}

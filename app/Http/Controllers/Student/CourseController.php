@@ -53,7 +53,8 @@ class CourseController extends Controller
                 $query->withCount('questions');
             },
             'assignments.submissions',
-            'teachers'
+            'teachers',
+            'meetings'
         ]);
 
         $student = $user->load('quizAttempts', 'assignmentSubmissions', 'studentGrades', 'certificates');

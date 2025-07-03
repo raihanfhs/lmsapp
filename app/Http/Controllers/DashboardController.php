@@ -32,9 +32,6 @@ class DashboardController extends Controller
         } elseif ($user->hasRole('Chief')) { // CHANGE 'chief' to 'Chief'
             return redirect()->route('chief.dashboard');
         }
-
-        // If none of the role checks above pass, it falls back to the generic dashboard
-        dd('No specific role dashboard, showing generic dashboard.'); // This would hit if hasRole('chief') returned false
         return view('dashboard');
     }
 }
