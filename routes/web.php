@@ -70,8 +70,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 */
 Route::middleware(['auth', 'role:Chief'])->name('chief.')->prefix('chief')->group(function () {
     Route::get('/dashboard', [ChiefDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/chief/dashboard/export/pdf', [ChiefDashboardController::class, 'exportDashboardPdf'])->name('chief.dashboard.export.pdf');
-    Route::get('/chief/dashboard/export/excel', [ChiefDashboardController::class, 'exportDashboardExcel'])->name('chief.dashboard.export.excel');
+    Route::get('/dashboard/export/pdf', [ChiefDashboardController::class, 'exportDashboardPdf'])->name('dashboard.export.pdf');
+    Route::get('/dashboard/export/excel', [ChiefDashboardController::class, 'exportDashboardExcel'])->name('dashboard.export.excel');
 
 
 });

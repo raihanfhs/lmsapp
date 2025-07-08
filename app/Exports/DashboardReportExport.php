@@ -12,19 +12,17 @@ class DashboardReportExport implements WithMultipleSheets
 {
     protected $data;
 
+    // Menerima data yang sudah diformat
     public function __construct(array $data)
     {
         $this->data = $data;
     }
 
-    /**
-     * @return array
-     */
     public function sheets(): array
     {
         $sheets = [];
 
-        // Add sheets for each chart data
+        // Langsung teruskan data yang sudah siap ke setiap sheet
         $sheets[] = new UsersByRoleSheet($this->data['usersByRole']);
         $sheets[] = new UserVerificationStatusSheet($this->data['userVerificationStatus']);
         $sheets[] = new UserRegistrationTrendsSheet($this->data['userRegistrationTrends']);
