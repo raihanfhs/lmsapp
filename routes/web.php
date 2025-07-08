@@ -24,6 +24,7 @@ use App\Http\Controllers\Teacher\OptionController as TeacherOptionController;
 use App\Http\Controllers\Student\QuizAttemptController;
 use App\Http\Controllers\TrixController;
 use App\Http\Controllers\Forum\ForumController;
+use App\Http\Controllers\Forum\PostController;
 
 
 // Public Route (Homepage / Welcome)
@@ -58,6 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/courses/{course}/forum/create', [ForumController::class, 'create'])->name('forum.create');
     Route::post('/courses/{course}/forum', [ForumController::class, 'store'])->name('forum.store');
     Route::get('/courses/{course}/forum/{thread}', [ForumController::class, 'show'])->name('forum.show');
+    Route::post('/forum/{thread}/posts', [PostController::class, 'store'])->name('posts.store');
 });
 
 /*

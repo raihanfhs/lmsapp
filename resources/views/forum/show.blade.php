@@ -36,9 +36,27 @@
                     </div>
                 @endforeach
             </div>
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Tulis Balasan Anda</h3>
 
-            {{-- Formulir untuk membalas akan kita tambahkan di sini nanti --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <form method="POST" action="{{ route('posts.store', $thread->id) }}">
+                            @csrf
+                            <div>
+                                <textarea id="body" name="body" rows="6" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Tulis balasan Anda di sini...">{{ old('body') }}</textarea>
+                                <x-input-error :messages="$errors->get('body')" class="mt-2" />
+                            </div>
 
+                            <div class="flex items-center justify-end mt-4">
+                                <x-primary-button>
+                                    {{ __('Kirim Balasan') }}
+                                </x-primary-button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>
