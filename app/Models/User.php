@@ -109,4 +109,13 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(AssignmentSubmission::class, 'student_id');
     }
+    public function forumThreads(): HasMany
+    {
+        return $this->hasMany(ForumThread::class);
+    }
+
+    public function forumPosts(): HasMany
+    {
+        return $this->hasMany(ForumPost::class);
+    }
 }

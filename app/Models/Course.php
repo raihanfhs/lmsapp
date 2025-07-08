@@ -178,4 +178,8 @@ class Course extends Model
     {
         return $this->hasMany(Assignment::class);
     }
+    public function forumThreads(): HasMany
+    {
+        return $this->hasMany(ForumThread::class);
+    }
 }

@@ -23,6 +23,7 @@ use App\Http\Controllers\Teacher\QuestionController as TeacherQuestionController
 use App\Http\Controllers\Teacher\OptionController as TeacherOptionController;
 use App\Http\Controllers\Student\QuizAttemptController;
 use App\Http\Controllers\TrixController;
+use App\Http\Controllers\Forum\ForumController;
 
 
 // Public Route (Homepage / Welcome)
@@ -53,6 +54,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
     Route::get('/notifications/{id}/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::get('/courses/{course}/forum', [ForumController::class, 'index'])->name('forum.index');
+    Route::get('/courses/{course}/forum/create', [ForumController::class, 'create'])->name('forum.create');
+    Route::post('/courses/{course}/forum', [ForumController::class, 'store'])->name('forum.store');
+    Route::get('/courses/{course}/forum/{thread}', [ForumController::class, 'show'])->name('forum.show');
 });
 
 /*
