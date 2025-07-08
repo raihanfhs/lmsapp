@@ -17,7 +17,7 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-medium mb-4">User Verification Status</h3>
-                            <canvas id="userVerificationStatusChart"></canvas> {{-- NEW PIE CHART --}}
+                            <canvas id="userVerificationStatusChart"></canvas> {{-- Existing chart --}}
                         </div>
                     </div>
 
@@ -25,15 +25,25 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div>
                             <h3 class="text-lg font-medium mb-4">New User Registrations Over Time</h3>
-                            <canvas id="userRegistrationTrendsChart"></canvas> {{-- NEW LINE CHART --}}
+                            <canvas id="userRegistrationTrendsChart"></canvas> {{-- Existing chart --}}
                         </div>
                         <div>
                             <h3 class="text-lg font-medium mb-4">Courses by Status</h3>
-                            <canvas id="courseStatusChart"></canvas> {{-- NEW BAR CHART --}}
+                            <canvas id="courseStatusChart"></canvas> {{-- Existing chart --}}
                         </div>
                     </div>
 
-                    {{-- Add Download Report Buttons Here --}}
+                    {{-- --- PENAMBAHAN 1: ROW BARU UNTUK DIAGRAM KETERLIBATAN --- --}}
+                    <div class="grid grid-cols-1 gap-6 mb-8">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+                             <h3 class="text-lg font-medium mb-4">Siswa Aktif Harian (30 Hari Terakhir)</h3>
+                            <div class="h-80">
+                                <canvas id="dailyActiveStudentsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Download Report Buttons --}}
                     <div class="mt-8 text-right">
                         <h3 class="text-lg font-medium mb-4">Reports</h3>
                         <a href="{{ route('chief.reports.dashboard.excel') }}" class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 focus:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 mr-2">
@@ -54,119 +64,55 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                // ... (Kode Chart 1, 2, 3, 4 Anda yang sudah ada, biarkan saja)
                 // 1. Users by Role Chart
                 const rawDataUsersByRole = @json($usersByRole);
-                const labelsUsersByRole = rawDataUsersByRole.map(item => item.role.charAt(0).toUpperCase() + item.role.slice(1));
-                const dataPointsUsersByRole = rawDataUsersByRole.map(item => item.count);
-
-                new Chart(document.getElementById('myChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: labelsUsersByRole,
-                        datasets: [{
-                            label: 'Total Users',
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgb(54, 162, 235)',
-                            data: dataPointsUsersByRole,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { stepSize: 1 }
-                            }
-                        },
-                        plugins: {
-                            legend: { position: 'top' }
-                        }
-                    }
-                });
+                // ... (lanjutan kode chart 1)
 
                 // 2. User Verification Status (Pie Chart)
                 const userVerificationStatus = @json($userVerificationStatus);
-                new Chart(document.getElementById('userVerificationStatusChart'), {
-                    type: 'pie',
-                    data: {
-                        labels: userVerificationStatus.labels,
-                        datasets: [{
-                            label: 'User Status',
-                            data: userVerificationStatus.data,
-                            backgroundColor: userVerificationStatus.backgroundColor,
-                            borderColor: userVerificationStatus.borderColor,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { position: 'top' },
-                            title: { display: false }
-                        }
-                    }
-                });
+                // ... (lanjutan kode chart 2)
 
                 // 3. New User Registrations Over Time (Line Chart)
                 const userRegistrationTrends = @json($userRegistrationTrends);
-                new Chart(document.getElementById('userRegistrationTrendsChart'), {
-                    type: 'line',
-                    data: {
-                        labels: userRegistrationTrends.labels,
-                        datasets: [{
-                            label: userRegistrationTrends.label,
-                            data: userRegistrationTrends.data,
-                            borderColor: userRegistrationTrends.borderColor,
-                            backgroundColor: userRegistrationTrends.backgroundColor,
-                            fill: true,
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { stepSize: 1 }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: true, position: 'top' }
-                        }
-                    }
-                });
+                // ... (lanjutan kode chart 3)
 
                 // 4. Courses by Status (Bar Chart)
                 const courseStatusData = @json($courseStatusData);
-                new Chart(document.getElementById('courseStatusChart'), {
-                    type: 'bar',
+                // ... (lanjutan kode chart 4)
+
+                {{-- --- PENAMBAHAN 2: SKRIP UNTUK DIAGRAM BARU --- --}}
+                // 5. Daily Active Students Chart
+                const dasLabels = @json($dasLabels);
+                const dasData = @json($dasData);
+                new Chart(document.getElementById('dailyActiveStudentsChart'), {
+                    type: 'line',
                     data: {
-                        labels: courseStatusData.labels,
+                        labels: dasLabels,
                         datasets: [{
-                            label: 'Number of Courses',
-                            data: courseStatusData.data,
-                            backgroundColor: courseStatusData.backgroundColor,
-                            borderColor: courseStatusData.borderColor,
-                            borderWidth: 1
+                            label: 'Jumlah Siswa Aktif',
+                            data: dasData,
+                            backgroundColor: 'rgba(22, 163, 74, 0.2)', // Greenish background
+                            borderColor: 'rgba(22, 163, 74, 1)',     // Greenish border
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
                         }]
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: { stepSize: 1 }
+                                ticks: {
+                                    precision: 0 // Memastikan tidak ada angka desimal di sumbu Y
+                                }
                             }
-                        },
-                        plugins: {
-                            legend: { display: true, position: 'top' }
                         }
                     }
                 });
             });
         </script>
     @endpush
-
-
-
 </x-app-layout>
