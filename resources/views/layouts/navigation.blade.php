@@ -130,6 +130,11 @@
                                 </div>
                                 @endif
                             </div>
+                            <div class="border-t border-gray-200">
+                                <a href="{{ route('notifications.index') }}" class="block px-4 py-3 text-sm text-center text-blue-600 hover:bg-gray-100">
+                                    View all notifications
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

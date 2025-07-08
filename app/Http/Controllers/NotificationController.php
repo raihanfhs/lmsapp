@@ -6,9 +6,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
+    public function index(): View
+    {
+        // Ambil semua notifikasi milik user, urutkan dari yang terbaru, dan gunakan paginasi
+        $notifications = Auth::user()
+                             ->notifications()
+                             ->latest() // Mengurutkan dari yang paling baru
+                             ->paginate(15); // Tampilkan 15 notifikasi per halaman
+
+        return view('notifications.index', compact('notifications'));
+    }
+
     public function markAsRead(string $id): RedirectResponse
     {
         $notification = DatabaseNotification::findOrFail($id);
