@@ -99,7 +99,20 @@ class CourseController extends Controller // <-- CHANGE THIS LINE
         }
 
         // Eager load relationships for the course
-        $course->load(['students', 'sections.materials']);
+        $course->load([
+            'sections' => function ($query) {
+                $query->orderBy('order'); // Ensure sections are ordered
+            },
+            'sections.materials' => function ($query) {
+                $query->orderBy('order', 'asc');
+            },
+            'sections.quizzes' => function ($query) {
+                $query->withCount('questions');
+            },
+            'sections.assignments',
+            'students', 
+            'sections.materials'
+        ]);
 
         // Now, for each enrolled student, eager load their grades and certificates for THIS course
         // This approach is more explicit and often more reliable for nested conditions.

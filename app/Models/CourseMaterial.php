@@ -20,6 +20,7 @@ class CourseMaterial extends Model
         'course_id',
         'title',
         'description',
+        'course_section_id',
         'content',
         'parent_id',
         'order',
@@ -58,4 +59,16 @@ class CourseMaterial extends Model
         return $this->belongsTo(CourseSection::class, 'course_section_id');
     }
 
+    public function materials(): HasMany
+    {
+        return $this->hasMany(CourseMaterial::class)->orderBy('order');
+    }
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class)->orderBy('order'); // Assuming Quiz has an order column or you'd order by created_at
+    }
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class)->orderBy('created_at'); // Order assignments
+    }
 }

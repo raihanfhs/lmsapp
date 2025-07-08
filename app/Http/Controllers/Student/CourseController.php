@@ -46,6 +46,16 @@ class CourseController extends Controller
 
         // Eager load all necessary relationships in a single, clean call
         $course->load([
+            'sections' => function ($query) {
+                $query->orderBy('order'); // Ensure sections are ordered
+            },
+            'sections.materials' => function ($query) {
+                $query->orderBy('order', 'asc');
+            },
+            'sections.quizzes' => function ($query) {
+                $query->withCount('questions');
+            },
+            'sections.assignments',
             'materials' => function ($query) {
                 $query->orderBy('order', 'asc');
             },
