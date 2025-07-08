@@ -1,3 +1,5 @@
+// resources/js/app.js
+
 import './bootstrap';
 
 import Alpine from 'alpinejs';
@@ -16,14 +18,29 @@ import {
   BarController, 
   BarElement, 
   ArcElement, 
-  PieController
+  PieController,
+  Filler // <-- 1. IMPOR PLUGIN FILLER DI SINI
 } from 'chart.js';
 
 // Register the controllers and elements you will use
-Chart.register(BarController, LineController, LineElement, PointElement,CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PieController);
+Chart.register(
+    BarController,
+    LineController,
+    LineElement,
+    PointElement,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    PieController,
+    Filler // <-- 2. DAFTARKAN PLUGIN FILLER DI SINI
+);
 
 
 window.Alpine = Alpine;
-window.Chart = Chart; // Make Chart.js globally accessible if needed in other scripts or inline
+window.Chart = Chart;
 
 Alpine.start();

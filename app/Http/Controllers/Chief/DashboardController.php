@@ -75,17 +75,20 @@ class DashboardController extends Controller
             'borderColor' => ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)']
         ];
         
-        // 5. Data untuk Siswa Aktif Harian (Kode Anda sudah benar)
+        // 5. Data untuk Siswa Aktif Harian 
         $thirtyDaysAgo = now()->subDays(30);
         $dailyActiveStudents = Login::join('users', 'logins.user_id', '=', 'users.id')
-            ->join('role_user', 'users.id', '=', 'role_user.user_id')
-            ->join('roles', 'role_user.role_id', '=', 'roles.id')
-            ->where('roles.name', 'student')
+            ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id') // PERBAIKAN
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where('roles.name', 'student') 
+            ->where('model_has_roles.model_type', User::class) // Tambahan: Pastikan modelnya adalah User
             ->where('logins.created_at', '>=', $thirtyDaysAgo)
             ->select(DB::raw('DATE(logins.created_at) as date'), DB::raw('COUNT(DISTINCT logins.user_id) as student_count'))
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get();
+            
+        
         $dasLabels = $dailyActiveStudents->pluck('date');
         $dasData = $dailyActiveStudents->pluck('student_count');
         
@@ -97,9 +100,7 @@ class DashboardController extends Controller
             'courseStatusData' => $courseStatusData,
             'dasLabels' => $dasLabels,
             'dasData' => $dasData,
-            // Baris ini mengambil data dari method lain, pastikan method getDashboardChartData() 
-            // tidak duplikat dengan data di atas. Jika tidak diperlukan, Anda bisa menghapusnya.
-            // 'chartData' => $this->getDashboardChartData()
+
         ]);
     }
 
