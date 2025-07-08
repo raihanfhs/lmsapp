@@ -25,6 +25,7 @@ use App\Http\Controllers\Student\QuizAttemptController;
 use App\Http\Controllers\TrixController;
 use App\Http\Controllers\Forum\ForumController;
 use App\Http\Controllers\Forum\PostController;
+use App\Http\Controllers\Chief\DashboardController as ChiefDashboardController;
 
 
 // Public Route (Homepage / Welcome)
@@ -68,11 +69,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:Chief'])->name('chief.')->prefix('chief')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Chief\DashboardController::class, 'index'])->name('dashboard');
-    // --- NEW COMPREHENSIVE REPORT ROUTES ---
-    Route::get('/reports/dashboard/excel', [\App\Http\Controllers\Chief\DashboardController::class, 'exportDashboardExcel'])->name('reports.dashboard.excel');
-    Route::get('/reports/dashboard/pdf', [\App\Http\Controllers\Chief\DashboardController::class, 'exportDashboardPdf'])->name('reports.dashboard.pdf');
-    // --- END NEW COMPREHENSIVE REPORT ROUTES ---
+    Route::get('/dashboard', [ChiefDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/chief/dashboard/export/pdf', [ChiefDashboardController::class, 'exportDashboardPdf'])->name('chief.dashboard.export.pdf');
+    Route::get('/chief/dashboard/export/excel', [ChiefDashboardController::class, 'exportDashboardExcel'])->name('chief.dashboard.export.excel');
+
 
 });
 

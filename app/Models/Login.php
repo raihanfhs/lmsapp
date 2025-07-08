@@ -4,10 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Login extends Model
 {
     use HasFactory;
+
+    /**
+     * Memberitahu Eloquent untuk tidak mengelola timestamps (created_at & updated_at) secara otomatis.
+     * Ini adalah baris kunci untuk perbaikan.
+     * @var bool
+     */
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -16,13 +24,17 @@ class Login extends Model
      */
     protected $fillable = [
         'user_id',
+        'ip_address',
+        'user_agent',
+        'created_at',
     ];
 
     /**
-     * Indicates if the model should be timestamped.
-     * Kita hanya perlu created_at, jadi kita set updated_at menjadi false.
-     *
-     * @var bool
+     * Mendefinisikan relasi bahwa setiap record Login
+     * dimiliki oleh satu User.
      */
-    public const UPDATED_AT = null;
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

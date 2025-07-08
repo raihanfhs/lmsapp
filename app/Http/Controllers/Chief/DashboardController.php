@@ -19,88 +19,31 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        // 1. Data untuk Users by Role (Kode Anda sudah benar)
-        $rolesWithUsers = Role::withCount('users')->get();
-        $usersByRole = $rolesWithUsers->map(function ($role) {
-            return (object) [
-                'role' => $role->name,
-                'count' => $role->users_count,
-            ];
-        });
-        // Anda bisa hapus blok 'if empty' ini jika sudah masuk masa produksi
-        if ($usersByRole->isEmpty()) {
-            $usersByRole = collect([
-                (object)['role' => 'Teacher', 'count' => 5],
-                (object)['role' => 'Student', 'count' => 30],
-                (object)['role' => 'Admin', 'count' => 1],
-                (object)['role' => 'Pengelola', 'count' => 2],
-                (object)['role' => 'Chief', 'count' => 1],
-            ]);
-        }
+        // Panggil method untuk mendapatkan semua data chart
+        $chartData = $this->getDashboardChartData();
 
-        // 2. Data untuk User Verification Status (Kode Anda sudah benar)
-        $verifiedUsersCount = User::whereNotNull('email_verified_at')->count();
-        $unverifiedUsersCount = User::whereNull('email_verified_at')->count();
-        $userVerificationStatus = [
-            'labels' => ['Verified', 'Unverified'],
-            'data' => [$verifiedUsersCount, $unverifiedUsersCount],
-            'backgroundColor' => ['#4CAF50', '#FFC107'],
-            'borderColor' => ['#4CAF50', '#FFC107'],
-        ];
-
-        // 3. Data untuk New User Registrations (Kode Anda sudah benar)
-        $newUsersByMonth = User::select(
-                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
-                DB::raw('count(*) as count')
-            )
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-        $userRegistrationTrends = [
-            'labels' => $newUsersByMonth->pluck('month')->toArray(),
-            'data' => $newUsersByMonth->pluck('count')->toArray(),
-            'label' => 'New User Registrations',
-            'borderColor' => '#007bff',
-            'backgroundColor' => 'rgba(0, 123, 255, 0.2)',
-        ];
-
-        // 4. Data untuk Courses by Status (Kode Anda sudah benar)
-        $coursesByStatus = Course::select('status', DB::raw('count(*) as count'))
-                                    ->groupBy('status')
-                                    ->get();
-        $courseStatusData = [
-            'labels' => $coursesByStatus->pluck('status')->map(fn($s) => ucfirst($s))->toArray(),
-            'data' => $coursesByStatus->pluck('count')->toArray(),
-            'backgroundColor' => ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)'],
-            'borderColor' => ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)']
-        ];
-        
-        // 5. Data untuk Siswa Aktif Harian 
+        // Ambil data untuk Siswa Aktif Harian (Daily Active Students)
         $thirtyDaysAgo = now()->subDays(30);
-        $dailyActiveStudents = Login::join('users', 'logins.user_id', '=', 'users.id')
-            ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id') // PERBAIKAN
-            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->where('roles.name', 'student') 
-            ->where('model_has_roles.model_type', User::class) // Tambahan: Pastikan modelnya adalah User
-            ->where('logins.created_at', '>=', $thirtyDaysAgo)
-            ->select(DB::raw('DATE(logins.created_at) as date'), DB::raw('COUNT(DISTINCT logins.user_id) as student_count'))
+        $dailyActiveStudents = Login::where('created_at', '>=', $thirtyDaysAgo)
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'student');
+            })
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(DISTINCT user_id) as student_count'))
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get();
             
-        
         $dasLabels = $dailyActiveStudents->pluck('date');
         $dasData = $dailyActiveStudents->pluck('student_count');
-        
-        // Gabungkan SEMUA data ke dalam satu array untuk dikirim ke view
+
+        // Gabungkan semua data dan kirim ke view
         return view('chief.dashboard', [
-            'usersByRole' => $usersByRole,
-            'userVerificationStatus' => $userVerificationStatus,
-            'userRegistrationTrends' => $userRegistrationTrends,
-            'courseStatusData' => $courseStatusData,
+            'usersByRole' => $chartData['usersByRole'],
+            'userVerificationStatus' => $chartData['userVerificationStatus'],
+            'userRegistrationTrends' => $chartData['userRegistrationTrends'],
+            'courseStatusData' => $chartData['courseStatusData'],
             'dasLabels' => $dasLabels,
             'dasData' => $dasData,
-
         ]);
     }
 
@@ -119,12 +62,26 @@ class DashboardController extends Controller
      * Export a comprehensive dashboard report to PDF.
      * @return \Illuminate\Http\Response
      */
-    public function exportDashboardPdf()
+    public function exportDashboardPdf(): Response
     {
-        // Get all chart data
-        $data = $this->getDashboardChartData();
-        $pdf = Pdf::loadView('reports.executive_dashboard_pdf', $data); // Use a new PDF view
-        return $pdf->download('executive_dashboard_report.pdf');
+        $chartData = $this->getDashboardChartData();
+        $usersByRole = $chartData['userVerificationStatus']; // Ambil data
+
+        // -- TAMBAHKAN BLOK KODE INI UNTUK MEMPERBAIKI PDF --
+        $userVerificationStatusForPdf = [
+            'labels' => array_column($chartData['userVerificationStatus'], 'status'),
+            'data' => array_column($chartData['userVerificationStatus'], 'count')
+        ];
+        // -- AKHIR BLOK --
+
+        $pdf = Pdf::loadView('reports.dashboard-pdf', [
+            'usersByRole' => $chartData['usersByRole'],
+            'userVerificationStatus' => $userVerificationStatusForPdf, // <-- GUNAKAN VARIABEL BARU
+            'userRegistrationTrends' => $chartData['userRegistrationTrends'],
+            'courseStatusData' => $chartData['courseStatusData'],
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('dashboard-report-' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**
@@ -133,73 +90,39 @@ class DashboardController extends Controller
      */
     private function getDashboardChartData(): array
     {
-        // 1. Data for Users by Role
-        $rolesWithUsers = Role::withCount('users')->get();
-        $usersByRole = $rolesWithUsers->map(function ($role) {
-            return (object) [
-                'role' => $role->name,
-                'count' => $role->users_count,
-            ];
-        });
-        if ($usersByRole->isEmpty()) {
-            $usersByRole = collect([
-                (object)['role' => 'Teacher', 'count' => 5],
-                (object)['role' => 'Student', 'count' => 30],
-                (object)['role' => 'Admin', 'count' => 1],
-                (object)['role' => 'Pengelola', 'count' => 2],
-                (object)['role' => 'Chief', 'count' => 1],
-            ]);
-        }
-
-        // 2. Data for User Verification Status (Pie Chart)
-        $verifiedUsersCount = User::whereNotNull('email_verified_at')->count();
-        $unverifiedUsersCount = User::whereNull('email_verified_at')->count();
-        $userVerificationStatus = [
-            'labels' => ['Verified', 'Unverified'],
-            'data' => [$verifiedUsersCount, $unverifiedUsersCount],
-            'backgroundColor' => ['#4CAF50', '#FFC107'],
-            'borderColor' => ['#4CAF50', '#FFC107'],
-        ];
-
-        // 3. Data for New User Registrations Over Time (Line Chart)
-        $newUsersByMonth = User::select(
-                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
-                DB::raw('count(*) as count')
-            )
-            ->groupBy('month')
-            ->orderBy('month')
+        // Chart 1: Total Users by Role (No change needed here)
+        $usersByRole = User::join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->select('roles.name as role', DB::raw('count(*) as count'))
+            ->groupBy('roles.name')
             ->get();
 
-        $userRegistrationTrends = [
-            'labels' => $newUsersByMonth->pluck('month')->toArray(),
-            'data' => $newUsersByMonth->pluck('count')->toArray(),
-            'label' => 'New User Registrations',
-            'borderColor' => '#007bff',
-            'backgroundColor' => 'rgba(0, 123, 255, 0.2)',
-        ];
+        // Chart 2: User Verification Status (CORRECTED LOGIC)
+        $userVerificationStatus = User::select('email_verified_at', DB::raw('count(*) as count'))
+            ->groupBy('email_verified_at')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    // This creates the 'status' and 'count' keys JS expects
+                    'status' => $item->email_verified_at ? 'Verified' : 'Not Verified',
+                    'count' => $item->count,
+                ];
+            });
+        
 
-        // 4. Data for Courses by Status (Bar Chart)
-        $coursesByStatus = Course::select('status', DB::raw('count(*) as count'))
-                                 ->groupBy('status')
-                                 ->get();
+        // Chart 3: New User Registrations Over Time (No change needed here)
+        $userRegistrationTrends = User::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->where('created_at', '>=', now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
 
-        $courseStatusData = [
-            'labels' => $coursesByStatus->pluck('status')->map(function($status) {
-                return ucfirst($status);
-            })->toArray(),
-            'data' => $coursesByStatus->pluck('count')->toArray(),
-            'backgroundColor' => [
-                'rgba(255, 99, 132, 0.7)',
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(255, 206, 86, 0.7)'
-            ],
-            'borderColor' => [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)'
-            ]
-        ];
-        // Return all collected data as an associative array
+        // Chart 4: Courses by Status (No change needed here)
+        $courseStatusData = Course::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get();
+
+        // Return all chart data
         return [
             'usersByRole' => $usersByRole,
             'userVerificationStatus' => $userVerificationStatus,

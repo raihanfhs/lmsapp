@@ -7,51 +7,52 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{-- Row 1 --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div>
-                            <h3 class="text-lg font-medium mb-4">Total Users by Role</h3>
-                            <canvas id="myChart"></canvas>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-medium mb-4">User Verification Status</h3>
-                            <canvas id="userVerificationStatusChart"></canvas>
-                        </div>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    <div class="flex justify-end mb-4 space-x-2">
+                        <a href="{{ route('chief.dashboard.export.pdf') }}" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">
+                            Download PDF
+                        </a>
+                        <a href="{{ route('chief.dashboard.export.excel') }}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+                            Download Excel
+                        </a>
                     </div>
 
-                    {{-- Row 2 --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div>
-                            <h3 class="text-lg font-medium mb-4">New User Registrations Over Time</h3>
-                            <canvas id="userRegistrationTrendsChart"></canvas>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="font-semibold text-lg mb-2">Total Users by Role</h3>
+                            <div style="position: relative; height: 350px;">
+                                <canvas id="myChart"></canvas>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-medium mb-4">Courses by Status</h3>
-                            <canvas id="courseStatusChart"></canvas>
-                        </div>
-                    </div>
 
-                    {{-- Row 3: Daily Active Students --}}
-                    <div class="grid grid-cols-1 gap-6 mb-8">
-                        <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700">
-                            <h3 class="text-lg font-medium mb-4">Siswa Aktif Harian (30 Hari Terakhir)</h3>
-                            <div class="relative h-80 w-full"> 
-                                <canvas id="dailyActiveStudentsChart"></canvas>
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="font-semibold text-lg mb-2">User Verification Status</h3>
+                            <div style="position: relative; height: 350px;">
+                                <canvas id="userVerificationStatusChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="font-semibold text-lg mb-2">New User Registrations Over Time</h3>
+                            <div style="position: relative; height: 350px;">
+                                <canvas id="userRegistrationTrendsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="font-semibold text-lg mb-2">Courses by Status</h3>
+                            <div style="position: relative; height: 350px;">
+                                <canvas id="courseStatusChart"></canvas>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Download Buttons --}}
-                    <div class="mt-8 text-right">
-                        <h3 class="text-lg font-medium mb-4">Reports</h3>
-                        <a href="{{ route('chief.reports.dashboard.excel') }}" class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 focus:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 mr-2">
-                            Download Dashboard (Excel)
-                        </a>
-                        <a href="{{ route('chief.reports.dashboard.pdf') }}" class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                            Download Dashboard (PDF)
-                        </a>
+                    <div class="mt-6 bg-white p-4 rounded-lg shadow">
+                        <h3 class="font-semibold text-lg mb-2">Daily Active Students (Last 30 Days)</h3>
+                        <div style="position: relative; height: 350px;">
+                            <canvas id="dailyActiveStudentsChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,68 +63,133 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
+            // Menunggu sampai seluruh halaman HTML selesai dimuat
             document.addEventListener('DOMContentLoaded', function () {
-                // Skrip untuk 4 chart Anda yang sudah ada (biarkan seperti apa adanya)
-                // 1. Users by Role Chart
-                const rawDataUsersByRole = @json($usersByRole);
-                new Chart(document.getElementById('myChart'), { /* ... konfigurasi Anda ... */ });
 
-                // 2. User Verification Status
-                const userVerificationStatus = @json($userVerificationStatus);
-                new Chart(document.getElementById('userVerificationStatusChart'), { /* ... konfigurasi Anda ... */ });
-
-                // 3. New User Registrations
-                const userRegistrationTrends = @json($userRegistrationTrends);
-                new Chart(document.getElementById('userRegistrationTrendsChart'), { /* ... konfigurasi Anda ... */ });
-
-                // 4. Courses by Status
-                const courseStatusData = @json($courseStatusData);
-                new Chart(document.getElementById('courseStatusChart'), { /* ... konfigurasi Anda ... */ });
-
-
-                // --- Skrip untuk diagram ke-5: Siswa Aktif Harian ---
-                try {
-                    const dasLabels = @json($dasLabels);
-                    const dasData = @json($dasData);
-
-                    // Hanya gambar chart jika ada data
-                    if (dasLabels && dasLabels.length > 0) {
-                        const dasCtx = document.getElementById('dailyActiveStudentsChart');
-                        if (dasCtx) {
-                            new Chart(dasCtx, {
-                                type: 'line',
-                                data: {
-                                    labels: dasLabels,
-                                    datasets: [{
-                                        label: 'Jumlah Siswa Aktif',
-                                        data: dasData,
-                                        backgroundColor: 'rgba(22, 163, 74, 0.2)',
-                                        borderColor: 'rgba(22, 163, 74, 1)',
-                                        borderWidth: 2,
-                                        tension: 0.3,
-                                        fill: true
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            ticks: { precision: 0 }
-                                        }
-                                    }
-                                }
-                            });
+                // 1. Chart: Total Pengguna Berdasarkan Peran (Users by Role)
+                const usersByRoleCtx = document.getElementById('myChart');
+                if (usersByRoleCtx) {
+                    const usersByRoleData = @json($usersByRole ?? []); 
+                    new Chart(usersByRoleCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: usersByRoleData.map(d => d.role),
+                            datasets: [{
+                                label: 'Total Users',
+                                data: usersByRoleData.map(d => d.count),
+                                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
                         }
-                    } else {
-                        // Tampilkan pesan jika tidak ada data
-                        const canvasContainer = document.getElementById('dailyActiveStudentsChart').parentElement;
-                        canvasContainer.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500">Tidak ada data aktivitas siswa dalam 30 hari terakhir.</div>`;
-                    }
-                } catch (e) {
-                    console.error("Gagal membuat diagram Siswa Aktif Harian:", e);
+                    });
                 }
+
+                // 2. Chart: Status Verifikasi Pengguna (User Verification Status)
+                const userVerificationCtx = document.getElementById('userVerificationStatusChart');
+                if (userVerificationCtx) {
+                    // This code now works because the controller sends a proper array
+                    const userVerificationData = @json($userVerificationStatus ?? []);
+                    new Chart(userVerificationCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: userVerificationData.map(d => d.status), // This will now work
+                            datasets: [{
+                                label: 'Users',
+                                data: userVerificationData.map(d => d.count), // This will also work
+                                backgroundColor: ['#1cc88a', '#f6c23e'],
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                        }
+                    });
+                }
+
+                // 3. Chart: Tren Pendaftaran Pengguna Baru (User Registration Trends)
+                const userRegistrationCtx = document.getElementById('userRegistrationTrendsChart');
+                if (userRegistrationCtx) {
+                    const userRegistrationData = @json($userRegistrationTrends ?? []);
+                    new Chart(userRegistrationCtx, {
+                        type: 'line',
+                        data: {
+                            labels: userRegistrationData.map(d => d.date),
+                            datasets: [{
+                                label: 'New Users',
+                                data: userRegistrationData.map(d => d.count),
+                                borderColor: '#4e73df',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 4. Chart: Status Kursus (Courses by Status)
+                const courseStatusCtx = document.getElementById('courseStatusChart');
+                if (courseStatusCtx) {
+                    const courseStatusData = @json($courseStatusData ?? []);
+                    new Chart(courseStatusCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: courseStatusData.map(d => d.status),
+                            datasets: [{
+                                label: 'Total Courses',
+                                data: courseStatusData.map(d => d.count),
+                                backgroundColor: ['#4e73df', '#1cc88a', '#f6c23e'],
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // 5. Chart: Siswa Aktif Harian (Daily Active Students)
+                const dailyActiveStudentsCtx = document.getElementById('dailyActiveStudentsChart');
+                if (dailyActiveStudentsCtx) {
+                    const dasLabels = @json($dasLabels ?? []);
+                    const dasData = @json($dasData ?? []);
+                    new Chart(dailyActiveStudentsCtx, {
+                        type: 'line',
+                        data: {
+                            labels: dasLabels,
+                            datasets: [{
+                                label: 'Active Students',
+                                data: dasData,
+                                borderColor: '#1cc88a',
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+
             });
         </script>
     @endpush
