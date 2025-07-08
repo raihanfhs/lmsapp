@@ -23,9 +23,16 @@ class CourseMaterialController extends Controller
         return view('pengelola.materials.create', compact('course', 'parentMaterials'));
     }
 
-    public function store(Request $request, Course $course): RedirectResponse
+   public function store(Request $request, Course $course): RedirectResponse
     {
-        // Otorisasi sudah ditangani oleh middleware pada route, jadi pengecekan manual tidak diperlukan.
+        // Authorization Check: Ensure the logged-in teacher is assigned to this course
+        if (!Auth::user()->teachingCourses()->where('course_id', $course->id)->exists()) {
+                abort(403, 'You are not assigned to teach this course.');
+        }
+
+        // --- CORRECTED VALIDATION ---
+        // Get max file size from your server's PHP configuration (in kilobytes)
+        $maxSize = (int)ini_get('upload_max_filesize') * 1024;
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -33,35 +40,37 @@ class CourseMaterialController extends Controller
             'parent_id' => [
                 'nullable',
                 'integer',
-                // Pastikan parent_id (jika ada) adalah materi yang valid di dalam course yang sama.
                 \Illuminate\Validation\Rule::exists('course_materials', 'id')->where('course_id', $course->id)
             ],
-            // Menentukan validasi file secara eksplisit dan jelas.
-            // max:102400 artinya maksimal 100MB (100 * 1024 KB). Sesuaikan jika perlu.
-            'video_file' => 'required|file|mimes:mp4,mov,avi,webm|max:102400',
+            'video_file' => [
+                'required',
+                'file',
+                'mimes:mp4,mov,avi,wmv,mpeg,qt,webm',
+                // CRITICAL FIX: This is the corrected 'max' rule.
+                'max:' . $maxSize,
+            ],
         ]);
 
-        // Proses penyimpanan file yang lebih rapi.
-        // File akan disimpan di storage/app/public/course_materials/{course_id}/...
-        $path = "course_materials/{$course->id}";
+        // --- FILE HANDLING ---
+        $path = "course_videos/{$course->id}";
         $filePath = $request->file('video_file')->store($path, 'public');
 
-        // Menyiapkan data untuk dimasukkan ke database.
+        // Prepare data for database record
         $data = [
             'course_id'   => $course->id,
             'parent_id'   => $validated['parent_id'] ?? null,
             'title'       => $validated['title'],
             'description' => $validated['description'] ?? null,
             'file_path'   => $filePath,
-            'file_type'   => 'video', // Tipe file bisa dibuat dinamis jika perlu.
+            'file_type'   => 'video',
         ];
 
+        // Create the CourseMaterial record
         CourseMaterial::create($data);
 
-        // Redirect kembali ke halaman detail kursus dengan pesan sukses.
-        // Sebaiknya redirect ke route milik 'pengelola' bukan 'teacher'.
-        return redirect()->route('pengelola.courses.show', $course->id)
-                            ->with('success', 'Materi "' . $validated['title'] . '" berhasil diunggah!');
+        // Redirect to the course detail page so the teacher can see the new material
+        return redirect()->route('teacher.courses.show', $course->id)
+                            ->with('success', 'Material "' . $validated['title'] . '" uploaded successfully!');
     }
 
     public function edit(Course $course, CourseMaterial $material): View

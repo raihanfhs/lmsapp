@@ -49,11 +49,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Accessible by Admin, Teacher, and Student
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy'); // For user account deletion
-
-    // We might add create/store later if profiles aren't auto-created on registration
-    // Route::get('/profile/create', [ProfileController::class, 'create'])->name('profile.create');
-    // Route::post('/profile', [ProfileController::class, 'store'])->name('profile.store');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy'); // For user account deletio
+    Route::post('/notifications/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::get('/notifications/{id}/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 });
 
 /*

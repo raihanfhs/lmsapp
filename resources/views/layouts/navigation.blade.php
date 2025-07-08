@@ -81,6 +81,59 @@
                 </div>
             </div>
 
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = ! open" class="relative p-2 text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        @if($unreadNotifications->count() > 0)
+                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                                {{ $unreadNotifications->count() }}
+                            </span>
+                        @endif
+                    </button>
+
+                    <div x-show="open"
+                        @click.away="open = false"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute z-50 mt-2 w-80 rounded-md shadow-lg end-0 origin-top-right"
+                        style="display: none;">
+                        <div class="rounded-md ring-1 ring-black ring-opacity-5 bg-white">
+                            <div class="p-4 border-b">
+                                <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
+                            </div>
+                            <div class="py-1">
+                                @forelse ($unreadNotifications as $notification)
+                                    <a href="{{ route('notifications.markAsRead', $notification->id) }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100">
+                                        <p class="font-medium">{{ $notification->data['message'] ?? 'New notification.' }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}</p>
+                                    </a>
+                                @empty
+                                    <div class="px-4 py-3 text-sm text-gray-500">
+                                        No unread notifications.
+                                    </div>
+                                @endforelse
+                                @if($unreadNotifications->count() > 0)
+                                <div class="border-t border-gray-200 px-4 py-2">
+                                    <form method="POST" action="{{ route('notifications.markAllAsRead') }}">
+                                        @csrf
+                                        <button type="submit" class="text-sm text-blue-600 hover:underline w-full text-center">
+                                            Mark all as read
+                                        </button>
+                                    </form>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
