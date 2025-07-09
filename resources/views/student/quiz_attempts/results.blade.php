@@ -32,7 +32,10 @@
                 @foreach ($quizAttempt->quiz->questions as $question)
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <p class="font-semibold">{{ $loop->iteration }}. {{ $question->question_text }}</p>
+                            <div class="flex items-start font-semibold">
+                                <span class="mr-2">{{ $loop->iteration }}.</span>
+                                <div class="prose max-w-none">{!! $question->question_text !!}</div>
+                            </div>
                             <div class="mt-4 pl-4 border-l-4 
                                 @php
                                     $studentAnswer = $quizAttempt->studentAnswers->where('question_id', $question->id)->pluck('option_id')->toArray();

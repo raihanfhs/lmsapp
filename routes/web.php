@@ -108,6 +108,7 @@ Route::middleware(['auth', 'verified', 'role:Pengelola'])->prefix('pengelola')->
     
     Route::resource('learning-paths', LearningPathController::class);
     Route::patch('/courses/{course}/update-status', [PengelolaCourseController::class, 'updateStatus'])->name('courses.update_status');
+    Route::resource('certificate-templates', App\Http\Controllers\Pengelola\CertificateTemplateController::class);
 });
 
 // --- Teacher Routes ---
