@@ -13,6 +13,10 @@ use Illuminate\Validation\Rule;
 use App\Exports\CourseProgressExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Str;
+use App\Models\CertificateTemplate;
+use App\Http\Requests\StoreCourseRequest;
+use App\Http\Requests\UpdateCourseRequest;
+use Illuminate\Support\Arr; 
 
 
 class CourseController extends Controller
@@ -41,36 +45,17 @@ class CourseController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse // Use specific Form Request later
+    public function store(StoreCourseRequest $request): RedirectResponse
     {
-    // TODO: Move validation to StoreCourseRequest later
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'course_code' => 'nullable|string|max:50|unique:courses,course_code',
-            'description' => 'nullable|string',
-            'duration_months' => 'nullable|integer|min:1',
-            'final_exam_date' => 'nullable|date',
-            'passing_grade' => 'nullable|integer|min:0|max:100',
-            'certificate_template_path' => 'nullable|string|max:255',
-            'prerequisites' => 'nullable|array', // <-- ADD VALIDATION FOR PREREQUISITES
-            'prerequisites.*' => 'integer|exists:courses,id' // <-- Ensure each ID exists
-        ]);
+        // Validasi sudah terjadi secara otomatis!
+        $validated = $request->validated();
 
-        // Create the course with data that belongs to the courses table
-        // We separate prerequisites because they belong in the pivot table
-        $course = Course::create([
-            'title' => $validated['title'],
-            'course_code' => $validated['course_code'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'duration_months' => $validated['duration_months'] ?? null,
-            'final_exam_date' => $validated['final_exam_date'] ?? null,
-            'passing_grade' => $validated['passing_grade'] ?? null,
-            'certificate_template_path' => $validated['certificate_template_path'] ?? null,
-        ]);
+        // Buat kursus
+        $course = Course::create(\Illuminate\Support\Arr::except($validated, ['prerequisites']));
 
-        // Attach prerequisites if they were selected in the form
-        if ($request->has('prerequisites')) {
-            $course->prerequisites()->attach($validated['prerequisites']);
+        // Attach prerequisites
+        if (isset($validated['prerequisites'])) {
+            $course->prerequisites()->sync($validated['prerequisites']);
         }
 
         return redirect()->route('pengelola.courses.index')
@@ -95,64 +80,48 @@ class CourseController extends Controller
         // Fetch all courses EXCEPT the current one
         $allCourses = Course::where('id', '!=', $course->id)->orderBy('title')->get();
 
-        // Get the IDs of the courses that are currently prerequisites for this course
+        $certificateTemplates = CertificateTemplate::all();
+
         $prerequisiteIds = $course->prerequisites()->pluck('courses.id')->toArray();
 
-        return view('pengelola.courses.edit', compact('course', 'allCourses', 'prerequisiteIds'));
+        return view('pengelola.courses.edit', compact('course', 'allCourses', 'prerequisiteIds', 'certificateTemplates'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Course $course): RedirectResponse
+    public function update(UpdateCourseRequest $request, Course $course): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required','string','max:255', \Illuminate\Validation\Rule::unique('courses')->ignore($course->id)],
-            'course_code' => ['nullable','string','max:50', \Illuminate\Validation\Rule::unique('courses')->ignore($course->id)],
-            'description' => 'nullable|string',
-            'duration_months' => 'nullable|integer|min:1',
-            'final_exam_date' => 'nullable|date',
-            'passing_grade' => 'nullable|integer|min:0|max:100',
-            'certificate_template_path' => 'nullable|string|max:255',
-            'prerequisites' => 'nullable|array', // <-- ADD VALIDATION
-            'prerequisites.*' => 'integer|exists:courses,id' // <-- ADD VALIDATION
-        ]);
+        // 1. Validasi sekarang terjadi otomatis saat memanggil method ini.
+        //    Kita tidak perlu lagi blok $request->validate().
 
-        // Separate prerequisites from main course data
-        $prerequisiteIds = $validated['prerequisites'] ?? [];
-        unset($validated['prerequisites']); // Remove from validated array before updating the course model
+        // 2. Ambil semua data yang sudah tervalidasi.
+        $validated = $request->validated();
 
-        // Update the main course record
-        $course->update($validated);
+        // 3. Update data kursus, kecuali 'prerequisites'.
+        $course->update(Arr::except($validated, ['prerequisites']));
 
-        // Sync the prerequisites
-        // sync() will add new prerequisites and remove any that were unchecked
-        $course->prerequisites()->sync($prerequisiteIds);
+        // 4. Sinkronkan prerequisites secara terpisah.
+        $course->prerequisites()->sync($validated['prerequisites'] ?? []);
 
         return redirect()->route('pengelola.courses.index')
                         ->with('success', 'Course updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(Course $course): RedirectResponse
     {
-        // Optional: Add authorization check here if needed later (e.g., using Gates/Policies)
-    
-        // Get the name for the success message before deleting
         $courseName = $course->title;
-    
-        // Delete the course record from the database
-        // Note: If you set up onDelete('cascade') correctly in your migrations
-        // for related tables (like course_materials, enrollments, course_teacher),
-        // those related records should be deleted automatically by the database.
-        // However, physical files (like videos) in storage are NOT deleted automatically.
+
+        // Hapus thumbnail dari storage jika ada
+        if ($course->thumbnail) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($course->thumbnail);
+        }
+
         $course->delete();
-    
-        // Redirect back to the course index page with a success message
+
         return redirect()->route('pengelola.courses.index')
-                         ->with('success', "Course '{$courseName}' deleted successfully.");
+                        ->with('success', "Course '{$courseName}' deleted successfully.");
     }
 
      /**
@@ -220,31 +189,23 @@ class CourseController extends Controller
      */
     public function progress(Course $course)
     {
-        // Eager load the necessary data to avoid multiple database queries.
-        // We get the course's enrollments, and for each enrollment, the student.
-        // We also get all grades that have been given for this course.
-        $course->load('enrollments.student', 'enrollments.course.grades');
+        // Eager load relasi yang dibutuhkan secara efisien
+        $enrollments = $course->enrollments()
+                            ->with(['student', 'grade']) // Asumsi ada relasi 'grade' di model Enrollment
+                            ->get();
 
-        // We will map over the enrollments to create a clean data structure for our view.
-        $studentsProgress = $course->enrollments->map(function ($enrollment) {
-            
-            // For each enrolled student, find their corresponding grade from the loaded 'grades' collection.
-            $studentGrade = $enrollment->course->grades->firstWhere('student_id', $enrollment->student_id);
-
+        // Mapping sekarang tidak akan memicu query baru
+        $studentsProgress = $enrollments->map(function ($enrollment) {
             return (object)[
                 'name' => $enrollment->student->name,
                 'email' => $enrollment->student->email,
                 'enrolled_at' => $enrollment->created_at->format('d M Y'),
-                'grade' => $studentGrade ? $studentGrade->grade : 'Not Graded',
-                'status' => $studentGrade ? ($studentGrade->is_passed ? 'Passed' : 'Failed') : 'In Progress',
+                'grade' => $enrollment->grade->grade ?? 'Not Graded',
+                'status' => isset($enrollment->grade) ? ($enrollment->grade->is_passed ? 'Passed' : 'Failed') : 'In Progress',
             ];
         });
 
-        // Return the view and pass the course and progress data to it.
-        return view('pengelola.courses.progress', [
-            'course' => $course,
-            'studentsProgress' => $studentsProgress,
-        ]);
+        return view('pengelola.courses.progress', compact('course', 'studentsProgress'));
     }
 
     public function exportProgress(Course $course)

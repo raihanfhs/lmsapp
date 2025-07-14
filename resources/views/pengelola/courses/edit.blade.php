@@ -80,10 +80,21 @@
                         </div>
 
                         {{-- Certificate Template Path --}}
-                        <div>
-                            <x-input-label for="certificate_template_path" :value="__('Certificate Template Path (Optional)')" />
-                            <x-text-input id="certificate_template_path" name="certificate_template_path" type="text" class="mt-1 block w-full" :value="old('certificate_template_path', $course->certificate_template_path)" />
-                            <x-input-error class="mt-2" :messages="$errors->get('certificate_template_path')" />
+                        <div class="mt-4">
+                            <label for="certificate_template_id" class="block font-medium text-sm text-gray-700">
+                                Template Sertifikat (Opsional)
+                            </label>
+                            <select name="certificate_template_id" id="certificate_template_id" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <option value="">-- Tidak Ada Sertifikat --</option>
+                                @foreach ($certificateTemplates as $template)
+                                    <option value="{{ $template->id }}" @selected(old('certificate_template_id', $course->certificate_template_id) == $template->id)>
+                                        {{ $template->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-2 text-sm text-gray-500">
+                                Pilih template yang akan digunakan saat siswa menyelesaikan kursus ini.
+                            </p>
                         </div>
 
 
