@@ -41,7 +41,10 @@
                         <x-nav-link :href="route('pengelola.learning-paths.index')" :active="request()->routeIs('pengelola.learning-paths.*')">
                             {{ __('Learning Paths') }}
                         </x-nav-link>
-                        {{-- You might add "Assign Teachers" here too, or access it via the courses list --}}
+                        <x-nav-link :href="route('pengelola.certificate-templates.index')" :active="request()->routeIs('pengelola.certificate-templates.*')">
+                            {{ __('Template Sertifikat') }}
+                        </x-nav-link>
+
                     @endhasrole
 
                     {{-- Chief --}}
