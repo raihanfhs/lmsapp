@@ -1,4 +1,3 @@
-// database/migrations/YYYY_MM_DD_HHMMSS_add_parent_id_to_course_materials_table.php
 <?php
 
 use Illuminate\Database\Migrations\Migration;

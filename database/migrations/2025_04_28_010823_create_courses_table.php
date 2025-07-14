@@ -13,17 +13,18 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            // Make sure this line exists and is not commented out or misspelled:
-            $table->foreignId('user_id'); // Creates the user_id column
+            // This schema matches the final state of your table
             $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('course_code')->unique()->nullable();
+            $table->text('description');
+            $table->string('course_code')->unique();
+            $table->integer('duration_months')->nullable()->comment('Estimated duration in months');
+            $table->dateTime('final_exam_date')->nullable();
+            $table->unsignedTinyInteger('passing_grade')->nullable()->comment('Passing grade percentage (0-100)');
+            $table->string('certificate_template_path')->nullable()->comment('Path to certificate template if any');
             $table->timestamps();
-    
-            // This adds the constraint, but the line above creates the column
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
+
     /**
      * Reverse the migrations.
      */
