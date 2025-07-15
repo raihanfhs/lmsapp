@@ -26,6 +26,7 @@ use App\Http\Controllers\TrixController;
 use App\Http\Controllers\Forum\ForumController;
 use App\Http\Controllers\Forum\PostController;
 use App\Http\Controllers\Chief\DashboardController as ChiefDashboardController;
+use App\Http\Controllers\GradingController;
 
 
 // Public Route (Homepage / Welcome)
@@ -152,8 +153,8 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
     });
 
     Route::get('/quizzes/{quiz}/questions', [TeacherQuestionController::class, 'index'])->name('quizzes.questions.index');
+    Route::get('teacher/quizzes/{quiz}/attempts', [TeacherQuizController::class, 'viewAttempts'])->name('teacher.quizzes.attempts');
     Route::get('/quizzes/{quiz}/questions/create', [TeacherQuestionController::class, 'create'])->name('quizzes.questions.create');
-    // Route untuk memproses penyimpanan pertanyaan baru
     Route::post('/quizzes/{quiz}/questions', [TeacherQuestionController::class, 'store'])->name('quizzes.questions.store');
     Route::get('/quizzes/{quiz}/questions/{question}/edit', [TeacherQuestionController::class, 'edit'])->name('quizzes.questions.edit');
     Route::put('/quizzes/{quiz}/questions/{question}', [TeacherQuestionController::class, 'update'])->name('quizzes.questions.update');
@@ -167,6 +168,9 @@ Route::middleware(['auth', 'verified', 'role:Teacher'])->prefix('teacher')->name
     Route::resource('courses/{course}/assignments', \App\Http\Controllers\Teacher\AssignmentController::class);
     Route::get('/assignments/{assignment}/submissions', [\App\Http\Controllers\Teacher\AssignmentController::class, 'viewSubmissions'])->name('assignments.submissions.index');
     Route::post('/submissions/{submission}/grade', [\App\Http\Controllers\Teacher\AssignmentController::class, 'gradeSubmission'])->name('assignments.submissions.grade');
+
+    Route::get('/quiz-attempts/{attempt}/grade', [GradingController::class, 'showGradingPage'])->name('grading.show');
+    Route::post('/quiz-attempts/{attempt}/grade', [GradingController::class, 'storeGrades'])->name('grading.store');
 
 });
 

@@ -51,6 +51,7 @@
 
                                     <td class="whitespace-nowrap px-4 py-2">
                                         <div class="flex items-center justify-end space-x-2">
+                                            <a href="{{ route('teacher.quizzes.attempts', $quiz) }}" class="text-green-600 hover:text-green-900 mr-4">View Attempts</a>
                                             <a href="{{ route('teacher.quizzes.questions.index', $quiz) }}" class="rounded bg-green-500 px-4 py-2 text-xs font-medium text-white hover:bg-green-600">Manage Questions</a>
                                             <a href="{{ route('teacher.quizzes.edit', ['course' => $course, 'quiz' => $quiz]) }}" class="rounded bg-blue-500 px-4 py-2 text-xs font-medium text-white hover:bg-blue-600">Edit</a>
                                             <form method="POST" action="{{ route('teacher.quizzes.destroy', ['course' => $course, 'quiz' => $quiz]) }}" onsubmit="return confirm('Are you sure?');">

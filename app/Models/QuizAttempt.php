@@ -19,6 +19,13 @@ class QuizAttempt extends Model
         'score',
     ];
 
+    protected $casts = [ // <-- ADD THIS ENTIRE BLOCK
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'score' => 'decimal:2',
+    ];
+
+
     public function quiz(): BelongsTo
     {
         return $this->belongsTo(Quiz::class);

@@ -14,7 +14,7 @@
             @endif
 
             <div class="flex justify-between items-center mb-4">
-                <a href="{{ route('teacher.quizzes.index', $quiz->course_id) }}" class="text-sm text-gray-600 hover:text-gray-900">
+                <a href="{{ route('teacher.quizzes.index', $quiz->course) }}" class="text-sm text-gray-600 hover:text-gray-900">
                     &larr; Back to Quiz List
                 </a>
                 <a href="{{ route('teacher.quizzes.questions.create', $quiz) }}" class="inline-flex ...">

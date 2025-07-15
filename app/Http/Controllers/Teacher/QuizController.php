@@ -40,19 +40,13 @@ class QuizController extends Controller
      */
     public function store(StoreQuizRequest $request, Course $course): RedirectResponse
     {
-        // Ambil data yang sudah lolos validasi dari StoreQuizRequest
         $validatedData = $request->validated();
-
-        // Tambahkan course_id ke dalam data sebelum disimpan
         $validatedData['course_id'] = $course->id;
+        $quiz = \App\Models\Quiz::create($validatedData);
 
-        // Buat record baru di database
-        $quiz = Quiz::create($validatedData);
+        return redirect()->route('teacher.quizzes.questions.index', $quiz)
+                    ->with('success', 'Quiz created successfully! Now you can add questions to it.');
 
-        // Redirect ke halaman daftar kuis dengan pesan sukses
-        // Nantinya kita bisa arahkan ke halaman 'tambah pertanyaan'
-        return redirect()->route('teacher.quizzes.index', $course)
-                         ->with('success', 'Quiz created successfully! Now you can add questions to it.');
     }
 
     /**
@@ -80,7 +74,6 @@ class QuizController extends Controller
             'title' => ['required', 'string', 'max:255', Rule::unique('quizzes')->where('course_id', $course->id)->ignore($quiz->id)],
             'description'   => 'nullable|string',
             'duration'      => 'required|integer|min:1',
-            // 👇 ENSURE THIS LINE IS CORRECT
             'pass_grade'    => 'required|integer|min:0|max:100', 
             'max_attempts'  => 'nullable|integer|min:1',
         ]);
@@ -97,5 +90,13 @@ class QuizController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function viewAttempts(Quiz $quiz)
+    {
+        // Eager load the user for each attempt to show their name
+        $attempts = $quiz->attempts()->with('user')->latest()->paginate(20);
+
+        return view('teacher.quizzes.attempts', compact('quiz', 'attempts'));
     }
 }
